@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using IdentityServer.Data;
 using IdentityServer.Models;
 using IdentityServer.Services;
+using IdentityServer.Configuration;
 
 namespace IdentityServer
 {
@@ -52,6 +53,14 @@ namespace IdentityServer
             // Add application services.
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
+
+            // Adds IdentityServer
+            services.AddIdentityServer()
+                .AddTemporarySigningCredential()
+                .AddInMemoryIdentityResources(Config.GetIdentityResources())
+                .AddInMemoryApiResources(Config.GetApiResources())
+                .AddInMemoryClients(Config.GetClients())
+                .AddAspNetIdentity<ApplicationUser>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -71,9 +80,15 @@ namespace IdentityServer
                 app.UseExceptionHandler("/Home/Error");
             }
 
+            // this will do the initial DB population
+            InitializeDatabase(app);
+
             app.UseStaticFiles();
 
             app.UseIdentity();
+
+            // Adds IdentityServer
+            app.UseIdentityServer();
 
             // Add external authentication middleware below. To configure them please see https://go.microsoft.com/fwlink/?LinkID=532715
 
@@ -83,6 +98,14 @@ namespace IdentityServer
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+        }
+
+        private void InitializeDatabase(IApplicationBuilder app)
+        {
+            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            {
+                serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.Migrate();
+            }
         }
     }
 }

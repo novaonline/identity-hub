@@ -1,6 +1,6 @@
 ﻿body {
     padding-top: 50px;
-    padding-bottom: 20px;
+    padding-bottom: 0;
 }
 
 /* Wrapping element */
@@ -8,6 +8,8 @@
 .body-content {
     padding-left: 15px;
     padding-right: 15px;
+    height: 50%;
+    min-height:250px;
 }
 
 /* Set widths on the form inputs since otherwise they're 100% wide */
@@ -48,3 +50,24 @@ textarea {
         display: none;
     }
 }
+
+footer {
+    background-color: #36454f;
+    color: white;
+    position:absolute;
+    bottom:0;
+    left:0;
+    right:0;
+}
+    footer .social-icons{
+        padding: 20px 0;
+    }
+    footer .site-map{
+        padding: 10px 0;
+    }
+
+    footer .final-words {
+        border-top: #ccc;
+        background-color: #82034f;
+        padding: 10px 0;
+    }
