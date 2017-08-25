@@ -7,9 +7,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using IdentityServer.Models;
 using IdentityServer.Models.ManageViewModels;
 using IdentityServer.Services;
+using IdentityServ.Models;
+using IdentityServer.Models.AccountViewModels;
 
 namespace IdentityServer.Controllers
 {
@@ -51,7 +52,8 @@ namespace IdentityServer.Controllers
                 : message == ManageMessageId.Error ? "An error has occurred."
                 : message == ManageMessageId.AddPhoneSuccess ? "Your phone number was added."
                 : message == ManageMessageId.RemovePhoneSuccess ? "Your phone number was removed."
-                : "";
+                : message == ManageMessageId.ProfileUpdateSuccess ? "Updated Profile"
+				: "";
 
             var user = await GetCurrentUserAsync();
             if (user == null)
@@ -242,9 +244,47 @@ namespace IdentityServer.Controllers
             return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
         }
 
-        //
-        // GET: /Manage/SetPassword
-        [HttpGet]
+		//
+		// GET: /Manage/ChangePassword
+		[HttpGet]
+		public IActionResult ChangeProfile()
+		{
+			return View();
+		}
+
+		//
+		// POST: /Manage/ChangePassword
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> ChangeProfile(ChangeProfileViewModel model)
+		{
+			// reuse a model
+			if (!ModelState.IsValid)
+			{
+				return View(model);
+			}
+			var user = await GetCurrentUserAsync();
+			if (user != null)
+			{
+				user.FirstName = model.FirstName;
+				user.LastName = model.LastName;
+
+				var result = await _userManager.UpdateAsync(user);
+				if (result.Succeeded)
+				{
+					await _signInManager.SignInAsync(user, isPersistent: false);
+					_logger.LogInformation(3, "User changed their password successfully.");
+					return RedirectToAction(nameof(Index), new { Message = ManageMessageId.ProfileUpdateSuccess});
+				}
+				AddErrors(result);
+				return View(model);
+			}
+			return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
+		}
+
+		//
+		// GET: /Manage/SetPassword
+		[HttpGet]
         public IActionResult SetPassword()
         {
             return View();
@@ -360,6 +400,7 @@ namespace IdentityServer.Controllers
             SetPasswordSuccess,
             RemoveLoginSuccess,
             RemovePhoneSuccess,
+			ProfileUpdateSuccess,
             Error
         }
 

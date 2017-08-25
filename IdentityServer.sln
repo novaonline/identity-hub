@@ -3,9 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityServer", "IdentityServer\IdentityServer.csproj", "{C1699F72-8F23-4807-BB5F-CEB0B1D14E21}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer", "IdentityServer\IdentityServer.csproj", "{C1699F72-8F23-4807-BB5F-CEB0B1D14E21}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{381DEA01-921E-439B-917A-CBF632212BDC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityServ.Models", "IdentityServ.Models\IdentityServ.Models.csproj", "{3C1080F3-3D18-4378-ACD1-0452F0D4A62C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityServ.Rules", "IdentityServ.Rules\IdentityServ.Rules.csproj", "{DDD03D3F-D33C-488C-B955-02FD8CD69B41}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,14 @@ Global
 		{381DEA01-921E-439B-917A-CBF632212BDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{381DEA01-921E-439B-917A-CBF632212BDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{381DEA01-921E-439B-917A-CBF632212BDC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C1080F3-3D18-4378-ACD1-0452F0D4A62C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C1080F3-3D18-4378-ACD1-0452F0D4A62C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C1080F3-3D18-4378-ACD1-0452F0D4A62C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C1080F3-3D18-4378-ACD1-0452F0D4A62C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDD03D3F-D33C-488C-B955-02FD8CD69B41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDD03D3F-D33C-488C-B955-02FD8CD69B41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDD03D3F-D33C-488C-B955-02FD8CD69B41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDD03D3F-D33C-488C-B955-02FD8CD69B41}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

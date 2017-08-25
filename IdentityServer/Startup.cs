@@ -13,99 +13,103 @@ using IdentityServer.Data;
 using IdentityServer.Models;
 using IdentityServer.Services;
 using IdentityServer.Configuration;
+using IdentityServ.Rules;
+using IdentityServ.Models;
+using System.Reflection;
 
 namespace IdentityServer
 {
-    public class Startup
-    {
-        public Startup(IHostingEnvironment env)
-        {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
+	public class Startup
+	{
+		public Startup(IHostingEnvironment env)
+		{
+			var builder = new ConfigurationBuilder()
+				.SetBasePath(env.ContentRootPath)
+				.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+				.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
 
-            if (env.IsDevelopment())
-            {
-                // For more details on using the user secret store see https://go.microsoft.com/fwlink/?LinkID=532709
-                builder.AddUserSecrets<Startup>();
-            }
+			if (env.IsDevelopment())
+			{
+				// For more details on using the user secret store see https://go.microsoft.com/fwlink/?LinkID=532709
+				builder.AddUserSecrets<Startup>();
+			}
 
-            builder.AddEnvironmentVariables();
-            Configuration = builder.Build();
-        }
+			builder.AddEnvironmentVariables();
+			Configuration = builder.Build();
+		}
 
-        public IConfigurationRoot Configuration { get; }
+		public IConfigurationRoot Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
-            // Add framework services.
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+		// This method gets called by the runtime. Use this method to add services to the container.
+		public void ConfigureServices(IServiceCollection services)
+		{
+			// Add framework services.
+			services.AddDbContext<ApplicationDbContext>(options =>
+				options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
+				b => b.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name)));
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
+			services.AddIdentity<ApplicationUser, IdentityRole>()
+				.AddEntityFrameworkStores<ApplicationDbContext>()
+				.AddDefaultTokenProviders();
 
-            services.AddMvc();
+			services.AddMvc();
 
-            // Add application services.
-            services.AddTransient<IEmailSender, AuthMessageSender>();
-            services.AddTransient<ISmsSender, AuthMessageSender>();
+			// Add application services.
+			services.AddTransient<IEmailSender, AuthMessageSender>();
+			services.AddTransient<ISmsSender, AuthMessageSender>();
 
-            // Adds IdentityServer
-            services.AddIdentityServer()
-                .AddTemporarySigningCredential()
-                .AddInMemoryIdentityResources(Config.GetIdentityResources())
-                .AddInMemoryApiResources(Config.GetApiResources())
-                .AddInMemoryClients(Config.GetClients())
-                .AddAspNetIdentity<ApplicationUser>();
-        }
+			// Adds IdentityServer
+			services.AddIdentityServer()
+				.AddTemporarySigningCredential()
+				.AddInMemoryIdentityResources(Config.GetIdentityResources())
+				.AddInMemoryApiResources(Config.GetApiResources())
+				.AddInMemoryClients(Config.GetClients())
+				.AddAspNetIdentity<ApplicationUser>();
+		}
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
-        {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
+		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+		public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+		{
+			loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+			loggerFactory.AddDebug();
 
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
-                app.UseBrowserLink();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-            }
+			if (env.IsDevelopment())
+			{
+				app.UseDeveloperExceptionPage();
+				app.UseDatabaseErrorPage();
+				app.UseBrowserLink();
+			}
+			else
+			{
+				app.UseExceptionHandler("/Home/Error");
+			}
 
-            // this will do the initial DB population
-            InitializeDatabase(app);
+			// this will do the initial DB population
+			InitializeDatabase(app);
 
-            app.UseStaticFiles();
+			app.UseStaticFiles();
 
-            app.UseIdentity();
+			app.UseIdentity();
 
-            // Adds IdentityServer
-            app.UseIdentityServer();
+			// Adds IdentityServer
+			app.UseIdentityServer();
 
-            // Add external authentication middleware below. To configure them please see https://go.microsoft.com/fwlink/?LinkID=532715
+			// Add external authentication middleware below. To configure them please see https://go.microsoft.com/fwlink/?LinkID=532715
 
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
-            });
-        }
+			app.UseMvc(routes =>
+			{
+				routes.MapRoute(
+					name: "default",
+					template: "{controller=Home}/{action=Index}/{id?}");
+			});
+		}
 
-        private void InitializeDatabase(IApplicationBuilder app)
-        {
-            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
-            {
-                serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.Migrate();
-            }
-        }
-    }
+		private void InitializeDatabase(IApplicationBuilder app)
+		{
+			using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+			{
+				serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.Migrate();
+			}
+		}
+	}
 }
