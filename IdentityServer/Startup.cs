@@ -16,6 +16,8 @@ using IdentityServer.Configuration;
 using IdentityServ.Rules;
 using IdentityServ.Models;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Rewrite;
 
 namespace IdentityServer
 {
@@ -52,6 +54,12 @@ namespace IdentityServer
 				.AddEntityFrameworkStores<ApplicationDbContext>()
 				.AddDefaultTokenProviders();
 
+			// globally imply that every controller requires https
+			services.Configure<MvcOptions>(options =>
+			{
+				options.Filters.Add(new RequireHttpsAttribute());
+			});
+
 			services.AddMvc();
 
 			// Add application services.
@@ -72,6 +80,9 @@ namespace IdentityServer
 		{
 			loggerFactory.AddConsole(Configuration.GetSection("Logging"));
 			loggerFactory.AddDebug();
+
+			// rewrite http to https
+			app.UseRewriter(new RewriteOptions().AddRedirectToHttps());
 
 			if (env.IsDevelopment())
 			{
