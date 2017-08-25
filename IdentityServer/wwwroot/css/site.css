@@ -48,12 +48,12 @@ textarea {
 }
 
 footer {
-    background-color: #36454f;
-    color: white;
-    position:fixed;
-    bottom:0;
-    left:0;
-    right:0;
+	background-color: #233140;
+	color: white;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
 }
     footer .social-icons{
         padding: 20px 0;
@@ -62,8 +62,16 @@ footer {
         padding: 10px 0;
     }
 
-    footer .final-words {
-        border-top: #ccc;
-        background-color: #82034f;
-        padding: 10px 0;
-    }
+	footer .final-words {
+		border-top: #ccc;
+		background-color: #8e1c60;
+		padding: 0 0;
+		transition: all ease-in-out 0.2s;
+		height: 0;
+	}
+
+	footer:hover .final-words, footer:focus .final-words{
+		height: 50px;
+		padding: 10px 0;
+		transition: all ease-in-out 0.2s;
+	}
