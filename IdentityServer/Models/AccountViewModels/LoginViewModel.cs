@@ -10,7 +10,7 @@ namespace IdentityServer.Models.AccountViewModels
     {
         [Required]
         [EmailAddress]
-        public string Email { get; set; }
+        public string Identity { get; set; }
 
         [Required]
         [DataType(DataType.Password)]

@@ -67,7 +67,17 @@ namespace IdentityServer.Controllers
 			{
 				// This doesn't count login failures towards account lockout
 				// To enable password failures to trigger account lockout, set lockoutOnFailure: true
-				var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+				// we can use email or username because a username cannot have an @ symbol
+				ApplicationUser requestedUser = null;
+				if (model.Identity.Contains('@'))
+				{
+					requestedUser = await _userManager.FindByEmailAsync(model.Identity);
+				}
+				else
+				{
+					requestedUser = await _userManager.FindByNameAsync(model.Identity);
+				}
+				var result = await _signInManager.PasswordSignInAsync(requestedUser, model.Password, model.RememberMe, lockoutOnFailure: false);
 				if (result.Succeeded)
 				{
 					_logger.LogInformation(1, "User logged in.");
@@ -140,6 +150,8 @@ namespace IdentityServer.Controllers
 			// If we got this far, something failed, redisplay form
 			return View(model);
 		}
+
+		// TODO Add Logout window
 
 		//
 		// POST: /Account/Logout
