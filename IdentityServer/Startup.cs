@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using IdentityServer.Data;
-using IdentityServer.Models;
 using IdentityServer.Services;
 using IdentityServer.Configuration;
 using IdentityServ.Rules;
@@ -18,6 +12,9 @@ using IdentityServ.Models;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Rewrite;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Http;
 
 namespace IdentityServer
 {
@@ -60,14 +57,31 @@ namespace IdentityServer
 				options.Filters.Add(new RequireHttpsAttribute());
 			});
 
-			services.AddMvc();
+			services.Configure<IdentityOptions>(options =>
+			{
+				options.Cookies.ApplicationCookie.LoginPath = new PathString("/login");
+				options.Cookies.ApplicationCookie.LogoutPath = new PathString("/logout");
+			});
+
+			services.AddMvc(config =>
+			{
+				// globally authorize each controller just in case an authorize decor was missed
+				var policy = new AuthorizationPolicyBuilder()
+				 .RequireAuthenticatedUser()
+				 .Build();
+				config.Filters.Add(new AuthorizeFilter(policy));
+			});
 
 			// Add application services.
 			services.AddTransient<IEmailSender, AuthMessageSender>();
 			services.AddTransient<ISmsSender, AuthMessageSender>();
 
 			// Adds IdentityServer
-			services.AddIdentityServer()
+			services.AddIdentityServer(o =>
+				{
+					o.UserInteraction.LoginUrl = "/login";
+					o.UserInteraction.LogoutUrl = "/logout";
+				})
 				.AddTemporarySigningCredential()
 				.AddInMemoryIdentityResources(Config.GetIdentityResources())
 				.AddInMemoryApiResources(Config.GetApiResources())
