@@ -13,6 +13,10 @@ using IdentityServer.Models;
 using IdentityServer.Models.AccountViewModels;
 using IdentityServer.Services;
 using IdentityServ.Models;
+using IdentityServer4.Stores;
+using IdentityServer4.Services;
+using Microsoft.AspNetCore.Http;
+using IdentityServer4.Extensions;
 
 namespace IdentityServer.Controllers
 {
@@ -24,7 +28,10 @@ namespace IdentityServer.Controllers
 		private readonly IEmailSender _emailSender;
 		private readonly ISmsSender _smsSender;
 		private readonly ILogger _logger;
+		private readonly IEventService _events;
 		private readonly string _externalCookieScheme;
+		private readonly AccountService _account;
+
 
 		public AccountController(
 			UserManager<ApplicationUser> userManager,
@@ -32,7 +39,12 @@ namespace IdentityServer.Controllers
 			IOptions<IdentityCookieOptions> identityCookieOptions,
 			IEmailSender emailSender,
 			ISmsSender smsSender,
-			ILoggerFactory loggerFactory)
+			ILoggerFactory loggerFactory,
+			IHttpContextAccessor httpContextAccessor,
+			IIdentityServerInteractionService interaction,
+			IClientStore clientStore,
+			IEventService events
+			)
 		{
 			_userManager = userManager;
 			_signInManager = signInManager;
@@ -40,6 +52,8 @@ namespace IdentityServer.Controllers
 			_emailSender = emailSender;
 			_smsSender = smsSender;
 			_logger = loggerFactory.CreateLogger<AccountController>();
+			_events = events;
+			_account = new AccountService(interaction, httpContextAccessor, clientStore);
 		}
 
 		//
@@ -151,17 +165,35 @@ namespace IdentityServer.Controllers
 			return View(model);
 		}
 
-		// TODO Add Logout window
+		[HttpGet]
+		public async Task<IActionResult> Logout(string logoutId)
+		{
+			var vm = await _account.BuildLogoutViewModelAsync(logoutId);
+			if (vm.ShowLogoutPrompt == false)
+			{
+				// no need to show prompt
+				return await Logout(vm);
+			}
+
+			return View(vm);
+		}
 
 		//
 		// POST: /Account/Logout
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Logout()
+		public async Task<IActionResult> Logout(LogoutInputModel model = null)
 		{
+			LoggedOutViewModel vm = new LoggedOutViewModel();
+			if(model != null)
+			{
+				vm = await _account.BuildLoggedOutViewModelAsync(model.LogoutId);
+			}
+			// social login part
+
 			await _signInManager.SignOutAsync();
 			_logger.LogInformation(4, "User logged out.");
-			return RedirectToAction(nameof(HomeController.Index), "Home");
+			return View("LoggedOut", vm);
 		}
 
 		//
