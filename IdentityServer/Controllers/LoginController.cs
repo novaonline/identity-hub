@@ -85,7 +85,7 @@ namespace IdentityServer.Controllers
 				}
 				else
 				{
-					ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+					ModelState.AddModelError("credentials", "Invalid login attempt.");
 					return View(model);
 				}
 			}

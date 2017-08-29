@@ -15,6 +15,9 @@ using Microsoft.AspNetCore.Rewrite;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Http;
+using IdentityServer4.EntityFramework.DbContexts;
+using IdentityServer4.EntityFramework.Mappers;
+using System.Linq;
 
 namespace IdentityServer
 {
@@ -42,9 +45,12 @@ namespace IdentityServer
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
+			// get the assembly 
+			var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+			var defaultConnectionString = Configuration.GetConnectionString("DefaultConnection");
 			// Add framework services.
 			services.AddDbContext<ApplicationDbContext>(options =>
-				options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
+				options.UseSqlServer(defaultConnectionString,
 				b => b.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name)));
 
 			services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -83,9 +89,20 @@ namespace IdentityServer
 					o.UserInteraction.LogoutUrl = "/logout";
 				})
 				.AddTemporarySigningCredential()
-				.AddInMemoryIdentityResources(Config.GetIdentityResources())
-				.AddInMemoryApiResources(Config.GetApiResources())
-				.AddInMemoryClients(Config.GetClients())
+				.AddConfigurationStore(builder =>
+				{
+					builder.UseSqlServer(defaultConnectionString, options =>
+					{
+						options.MigrationsAssembly(migrationsAssembly);
+					});
+				})
+				.AddOperationalStore(builder =>
+				{
+					builder.UseSqlServer(defaultConnectionString, options =>
+					{
+						options.MigrationsAssembly(migrationsAssembly);
+					});
+				})
 				.AddAspNetIdentity<ApplicationUser>();
 		}
 
@@ -110,7 +127,10 @@ namespace IdentityServer
 			}
 
 			// this will do the initial DB population
-			InitializeDatabase(app);
+			if (env.IsDevelopment())
+			{
+				InitializeDatabase(app);
+			}
 
 			app.UseStaticFiles();
 
@@ -134,6 +154,39 @@ namespace IdentityServer
 			using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
 			{
 				serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.Migrate();
+				serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
+
+				var context = serviceScope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
+				context.Database.Migrate();
+				if (!context.Clients.Any())
+				{
+					context.Clients.RemoveRange(context.Clients.AsEnumerable());
+					foreach (var client in Config.GetClients())
+					{
+						context.Clients.Add(client.ToEntity());
+					}
+					context.SaveChanges();
+				}
+
+				if (!context.IdentityResources.Any())
+				{
+					context.IdentityResources.RemoveRange(context.IdentityResources.AsEnumerable());
+					foreach (var resource in Config.GetIdentityResources())
+					{
+						context.IdentityResources.Add(resource.ToEntity());
+					}
+					context.SaveChanges();
+				}
+
+				if (!context.ApiResources.Any())
+				{
+					context.ApiResources.RemoveRange(context.ApiResources.AsEnumerable());
+					foreach (var resource in Config.GetApiResources())
+					{
+						context.ApiResources.Add(resource.ToEntity());
+					}
+					context.SaveChanges();
+				}
 			}
 		}
 	}
