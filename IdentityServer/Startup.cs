@@ -38,9 +38,11 @@ namespace IdentityServer
 
 			builder.AddEnvironmentVariables();
 			Configuration = builder.Build();
+			HostingEnvironment = env;
 		}
 
 		public IConfigurationRoot Configuration { get; }
+		public IHostingEnvironment HostingEnvironment { get; }
 
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
@@ -83,12 +85,11 @@ namespace IdentityServer
 			services.AddTransient<ISmsSender, AuthMessageSender>();
 
 			// Adds IdentityServer
-			services.AddIdentityServer(o =>
+			var identityConfig = services.AddIdentityServer(o =>
 				{
 					o.UserInteraction.LoginUrl = "/login";
 					o.UserInteraction.LogoutUrl = "/logout";
 				})
-				.AddTemporarySigningCredential()
 				.AddConfigurationStore(builder =>
 				{
 					builder.UseSqlServer(defaultConnectionString, options =>
@@ -104,6 +105,15 @@ namespace IdentityServer
 					});
 				})
 				.AddAspNetIdentity<ApplicationUser>();
+
+			if (HostingEnvironment.IsProduction())
+			{
+				// create the signing cred
+			}
+			else
+			{
+				identityConfig.AddTemporarySigningCredential();
+			}
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
