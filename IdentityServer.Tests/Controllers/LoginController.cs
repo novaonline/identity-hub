@@ -14,8 +14,9 @@ using System.Collections.Generic;
 using System.Linq;
 using IdentityServer.Models.AccountViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using IdentityServer.Tests.Helpers;
 
-namespace IdentityServer.Tests.Controller
+namespace IdentityServer.Tests.Controllers
 {
 	/// <summary>
 	/// https://stackoverflow.com/questions/40284313/how-do-i-create-an-httpcontext-for-my-unit-test
@@ -93,97 +94,7 @@ namespace IdentityServer.Tests.Controller
 		}
 
 
-		private Mock<FakeUserManager> MockFakeUserManager(IEnumerable<ApplicationUser> users)
-		{
-			var emails = users.Select(x => x.Email);
-			var usernames = users.Select(x => x.UserName);
 
-			var fakeUserManager = new Mock<FakeUserManager>();
-			fakeUserManager.Setup(p => p.Users).Returns(users.AsQueryable());
-			fakeUserManager.Setup(f => f.FindByEmailAsync(It.IsIn(emails))).ReturnsAsync(users.First());
-			fakeUserManager.Setup(f => f.FindByEmailAsync(It.IsNotIn(emails))).ReturnsAsync(value: null);
-			fakeUserManager.Setup(f => f.FindByNameAsync(It.IsIn(usernames))).ReturnsAsync(users.First());
-			fakeUserManager.Setup(f => f.FindByNameAsync(It.IsNotIn(usernames))).ReturnsAsync(value: null);
-			return fakeUserManager;
-		}
-
-		private Mock<FakeSignInManager> MockFakeSigninManager(
-			IEnumerable<ApplicationUser> mockUsersWhoGetLoggedIn,
-			IEnumerable<ApplicationUser> mockUsersWhoDoNotGetLoggedIn = null,
-			IEnumerable<ApplicationUser> mockUsersWhoAreLockedOut = null,
-			bool persistent = false)
-		{
-			// default to empty
-			mockUsersWhoDoNotGetLoggedIn = mockUsersWhoDoNotGetLoggedIn ?? new List<ApplicationUser>();
-			mockUsersWhoAreLockedOut = mockUsersWhoAreLockedOut ?? new List<ApplicationUser>();
-
-			var fakeSignInManager = new Mock<FakeSignInManager>();
-
-			fakeSignInManager.Setup(
-					x => x.PasswordSignInAsync(It.IsIn(mockUsersWhoGetLoggedIn), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
-				.ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.Success);
-
-			fakeSignInManager.Setup(
-				x => x.PasswordSignInAsync(It.IsIn(mockUsersWhoDoNotGetLoggedIn), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
-				.ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.Failed);
-
-			fakeSignInManager.Setup(
-				x => x.PasswordSignInAsync(It.IsIn(mockUsersWhoAreLockedOut), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
-				.ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.LockedOut);
-
-			return fakeSignInManager;
-		}
-
-		private Mock<IOptions<IdentityCookieOptions>> MockFakeIdentityCookieOptions()
-		{
-			var fakeIdentityCookieOptions = new Mock<IOptions<IdentityCookieOptions>>();
-			var identityCookieOptions = new IdentityCookieOptions
-			{
-				ExternalCookie = new Microsoft.AspNetCore.Builder.CookieAuthenticationOptions
-				{
-					AutomaticChallenge = true,
-					AutomaticAuthenticate = true,
-				},
-				ApplicationCookie = new Microsoft.AspNetCore.Builder.CookieAuthenticationOptions
-				{
-					AutomaticChallenge = true,
-					AutomaticAuthenticate = true,
-				}
-			};
-			fakeIdentityCookieOptions.Setup(p => p.Value).Returns(identityCookieOptions);
-			return fakeIdentityCookieOptions;
-		}
-
-		private LoginController MockController()
-		{
-			var users = new List<ApplicationUser>
-			{
-				new ApplicationUser
-				{
-					UserName = "test",
-					Id = Guid.NewGuid().ToString(),
-					Email = "test@test.it"
-				}
-			};
-
-			var fakeUserManager = MockFakeUserManager(users);
-
-			var fakeSignInManager = MockFakeSigninManager(users);
-
-			var fakeIdentityCookieOptions = MockFakeIdentityCookieOptions();
-
-			return new LoginController(
-				identityCookieOptions: fakeIdentityCookieOptions.Object,
-				userManager: fakeUserManager.Object,
-				signInManager: fakeSignInManager.Object,
-				emailSender: new Mock<IEmailSender>().Object,
-				smsSender: new Mock<ISmsSender>().Object,
-				logger: new Mock<ILogger<LoginController>>().Object
-				)
-			{
-
-			};
-		}
 
 		[Fact]
 		public async Task Should_ReturnAViewResultAndViewData_When_GETRequest()
@@ -207,9 +118,9 @@ namespace IdentityServer.Tests.Controller
 			var logger = factory.CreateLogger<LoginController>();
 
 			var controller = new LoginController(
-				identityCookieOptions: MockFakeIdentityCookieOptions().Object,
-				userManager: MockFakeUserManager(users).Object,
-				signInManager: MockFakeSigninManager(users).Object,
+				identityCookieOptions: AccountMocking.MockFakeIdentityCookieOptions().Object,
+				userManager: AccountMocking.MockFakeUserManager(users).Object,
+				signInManager: AccountMocking.MockFakeSigninManager(users).Object,
 				emailSender: new Mock<IEmailSender>().Object,
 				smsSender: new Mock<ISmsSender>().Object,
 				logger: logger
@@ -246,9 +157,9 @@ namespace IdentityServer.Tests.Controller
 			var logger = factory.CreateLogger<LoginController>();
 
 			var controller = new LoginController(
-				identityCookieOptions: MockFakeIdentityCookieOptions().Object,
-				userManager: MockFakeUserManager(users).Object,
-				signInManager: MockFakeSigninManager(users).Object,
+				identityCookieOptions: AccountMocking.MockFakeIdentityCookieOptions().Object,
+				userManager: AccountMocking.MockFakeUserManager(users).Object,
+				signInManager: AccountMocking.MockFakeSigninManager(users).Object,
 				emailSender: new Mock<IEmailSender>().Object,
 				smsSender: new Mock<ISmsSender>().Object,
 				logger: logger
@@ -301,9 +212,9 @@ namespace IdentityServer.Tests.Controller
 			var logger = factory.CreateLogger<LoginController>();
 
 			var controller = new LoginController(
-				identityCookieOptions: MockFakeIdentityCookieOptions().Object,
-				userManager: MockFakeUserManager(badCredentialsUsers).Object,
-				signInManager: MockFakeSigninManager(emptyUsers, badCredentialsUsers).Object,
+				identityCookieOptions: AccountMocking.MockFakeIdentityCookieOptions().Object,
+				userManager: AccountMocking.MockFakeUserManager(badCredentialsUsers).Object,
+				signInManager: AccountMocking.MockFakeSigninManager(emptyUsers, badCredentialsUsers).Object,
 				emailSender: new Mock<IEmailSender>().Object,
 				smsSender: new Mock<ISmsSender>().Object,
 				logger: logger
@@ -357,9 +268,9 @@ namespace IdentityServer.Tests.Controller
 			var logger = factory.CreateLogger<LoginController>();
 
 			var controller = new LoginController(
-				identityCookieOptions: MockFakeIdentityCookieOptions().Object,
-				userManager: MockFakeUserManager(badCredentialsUsers).Object,
-				signInManager: MockFakeSigninManager(emptyUsers, badCredentialsUsers).Object,
+				identityCookieOptions: AccountMocking.MockFakeIdentityCookieOptions().Object,
+				userManager: AccountMocking.MockFakeUserManager(badCredentialsUsers).Object,
+				signInManager: AccountMocking.MockFakeSigninManager(emptyUsers, badCredentialsUsers).Object,
 				emailSender: new Mock<IEmailSender>().Object,
 				smsSender: new Mock<ISmsSender>().Object,
 				logger: logger
@@ -404,9 +315,9 @@ namespace IdentityServer.Tests.Controller
 			var logger = factory.CreateLogger<LoginController>();
 
 			var controller = new LoginController(
-				identityCookieOptions: MockFakeIdentityCookieOptions().Object,
-				userManager: MockFakeUserManager(lockedOutUsers).Object,
-				signInManager: MockFakeSigninManager(emptyUsers, emptyUsers, lockedOutUsers).Object,
+				identityCookieOptions: AccountMocking.MockFakeIdentityCookieOptions().Object,
+				userManager: AccountMocking.MockFakeUserManager(lockedOutUsers).Object,
+				signInManager: AccountMocking.MockFakeSigninManager(emptyUsers, emptyUsers, lockedOutUsers).Object,
 				emailSender: new Mock<IEmailSender>().Object,
 				smsSender: new Mock<ISmsSender>().Object,
 				logger: logger
