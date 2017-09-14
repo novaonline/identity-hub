@@ -9,7 +9,6 @@ namespace IdentityServer.Models.AccountViewModels
     public class LoginViewModel
     {
         [Required]
-        [EmailAddress]
         public string Identity { get; set; }
 
         [Required]

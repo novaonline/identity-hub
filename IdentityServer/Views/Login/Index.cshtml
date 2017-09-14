@@ -1,6 +1,7 @@
 ﻿@using System.Collections.Generic
 @using Microsoft.AspNetCore.Http
 @using Microsoft.AspNetCore.Http.Authentication
+@using IdentityServer.Controllers
 @model LoginViewModel
 @inject SignInManager<ApplicationUser> SignInManager
 
@@ -9,7 +10,7 @@
 }
 
 <h2>@*@ViewData["Title"].*@</h2>
-@if (ViewData.ModelState["credentials"] != null && ViewData.ModelState["credentials"].Errors.Any())
+@if (ViewData.ModelState["credentials"] != null && ViewData.ModelState[LoginController.MODELSTATE_CREDENTIALS_KEY].Errors.Any())
 {
 	<div class="alert alert-danger" role="alert">
 		<span>@ViewData.ModelState["credentials"].Errors.First().ErrorMessage</span>
@@ -20,7 +21,7 @@
 	<div style="width:75%;margin: 0 auto;">
 		<div class="text-center">
 			<section>
-				<form asp-action="Index" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal">
+				<form asp-action="Index" asp-route-returnurl="@ViewData[LoginController.RETURN_URL_KEY]" method="post" class="form-horizontal">
 					<h4>Enter Credentials for Access</h4>
 					<hr />
 					<div class="form-group">

@@ -10,11 +10,14 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using IdentityServer.Services;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Http;
 
 namespace IdentityServer.Controllers
 {
 	public class LoginController : BaseAccountController
 	{
+		private static readonly string _returnUrlKey = "ReturnUrl";
+		private static readonly string _modelStateCredentialsKey = "credentials";
 		private readonly string _externalCookieScheme;
 		private readonly ILogger _logger;
 		private readonly IEmailSender _emailSender;
@@ -24,7 +27,7 @@ namespace IdentityServer.Controllers
 			IOptions<IdentityCookieOptions> identityCookieOptions,
 			UserManager<ApplicationUser> userManager,
 			SignInManager<ApplicationUser> signInManager,
-			ILoggerFactory loggerFactory,
+			ILogger<LoginController> logger,
 			IEmailSender emailSender,
 			ISmsSender smsSender
 			) : base(userManager, signInManager)
@@ -32,8 +35,12 @@ namespace IdentityServer.Controllers
 			_externalCookieScheme = identityCookieOptions.Value.ExternalCookieAuthenticationScheme;
 			_emailSender = emailSender;
 			_smsSender = smsSender;
-			_logger = loggerFactory.CreateLogger<LoginController>();
+			_logger = logger;
 		}
+
+		// never seen this before...
+		public static string RETURN_URL_KEY => _returnUrlKey;
+		public static string MODELSTATE_CREDENTIALS_KEY => _modelStateCredentialsKey;
 
 		// GET: /login
 		[HttpGet]
@@ -41,9 +48,9 @@ namespace IdentityServer.Controllers
 		public async Task<IActionResult> Index(string returnUrl = null)
 		{
 			// Clear the existing external cookie to ensure a clean login process
-			await HttpContext.Authentication.SignOutAsync(_externalCookieScheme);
+			await _signInManager.SignOutAsync();
 
-			ViewData["ReturnUrl"] = returnUrl;
+			ViewData[RETURN_URL_KEY] = returnUrl;
 			return View();
 		}
 
@@ -53,7 +60,7 @@ namespace IdentityServer.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Index(LoginViewModel model, string returnUrl = null)
 		{
-			ViewData["ReturnUrl"] = returnUrl;
+			ViewData[RETURN_URL_KEY] = returnUrl;
 			if (ModelState.IsValid)
 			{
 				// This doesn't count login failures towards account lockout
@@ -85,7 +92,7 @@ namespace IdentityServer.Controllers
 				}
 				else
 				{
-					ModelState.AddModelError("credentials", "Invalid login attempt.");
+					ModelState.AddModelError(MODELSTATE_CREDENTIALS_KEY, "Invalid login attempt.");
 					return View(model);
 				}
 			}

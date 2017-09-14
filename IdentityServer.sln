@@ -7,9 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer", "IdentityS
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{381DEA01-921E-439B-917A-CBF632212BDC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityServ.Models", "IdentityServ.Models\IdentityServ.Models.csproj", "{3C1080F3-3D18-4378-ACD1-0452F0D4A62C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServ.Models", "IdentityServ.Models\IdentityServ.Models.csproj", "{3C1080F3-3D18-4378-ACD1-0452F0D4A62C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityServ.Rules", "IdentityServ.Rules\IdentityServ.Rules.csproj", "{DDD03D3F-D33C-488C-B955-02FD8CD69B41}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServ.Rules", "IdentityServ.Rules\IdentityServ.Rules.csproj", "{DDD03D3F-D33C-488C-B955-02FD8CD69B41}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer.Tests", "IdentityServer.Tests\IdentityServer.Tests.csproj", "{9E57B9D9-F1E5-485B-8CF9-5935C1C369E3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{DDD03D3F-D33C-488C-B955-02FD8CD69B41}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DDD03D3F-D33C-488C-B955-02FD8CD69B41}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DDD03D3F-D33C-488C-B955-02FD8CD69B41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E57B9D9-F1E5-485B-8CF9-5935C1C369E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E57B9D9-F1E5-485B-8CF9-5935C1C369E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E57B9D9-F1E5-485B-8CF9-5935C1C369E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E57B9D9-F1E5-485B-8CF9-5935C1C369E3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
