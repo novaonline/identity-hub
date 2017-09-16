@@ -1,5 +1,7 @@
 ﻿using IdentityServ.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using System;
@@ -71,5 +73,18 @@ namespace IdentityServer.Tests.Helpers
 			fakeIdentityCookieOptions.Setup(p => p.Value).Returns(identityCookieOptions);
 			return fakeIdentityCookieOptions;
 		}
+
+		public static ILogger<T> MockFakeLogger<T>()
+		{
+			var serviceProvider = new ServiceCollection()
+				.AddLogging()
+				.BuildServiceProvider();
+
+			var factory = serviceProvider.GetService<ILoggerFactory>();
+
+			var logger = factory.CreateLogger<T>();
+			return logger;
+		}
+
 	}
 }

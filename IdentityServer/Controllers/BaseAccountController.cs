@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
 using IdentityServer4.Stores;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Routing;
 
 namespace IdentityServer.Controllers
 {
@@ -20,6 +21,7 @@ namespace IdentityServer.Controllers
 	{
 		protected readonly UserManager<ApplicationUser> _userManager;
 		protected readonly SignInManager<ApplicationUser> _signInManager;
+		protected static readonly string _alertMessageKey = "promptClose";
 
 		public BaseAccountController(
 			UserManager<ApplicationUser> userManager,
@@ -29,6 +31,8 @@ namespace IdentityServer.Controllers
 			_signInManager = signInManager;
 		}
 
+		public static string PROMPT_CLOSE_KEY => _alertMessageKey;
+
 		protected void AddErrors(IdentityResult result)
 		{
 			foreach (var error in result.Errors)
@@ -37,15 +41,18 @@ namespace IdentityServer.Controllers
 			}
 		}
 
-		protected IActionResult RedirectToLocal(string returnUrl)
+		protected IActionResult RedirectToLocal(string returnUrl, bool promptClose = true)
 		{
+			// TODO: Create a unit test for this
 			if (Url.IsLocalUrl(returnUrl))
 			{
 				return Redirect(returnUrl);
 			}
 			else
 			{
-				return RedirectToAction(nameof(HomeController.Index), "Home");
+				RouteValueDictionary routeValues = new RouteValueDictionary();
+				if (promptClose) routeValues.Add(PROMPT_CLOSE_KEY, true.ToString().ToLower());
+				return RedirectToAction(nameof(HomeController.Index), "Home", routeValues);
 			}
 		}
 	}

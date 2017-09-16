@@ -18,13 +18,11 @@ namespace IdentityServer.Controllers
 	{
 		private static readonly string _returnUrlKey = "ReturnUrl";
 		private static readonly string _modelStateCredentialsKey = "credentials";
-		private readonly string _externalCookieScheme;
 		private readonly ILogger _logger;
 		private readonly IEmailSender _emailSender;
 		private readonly ISmsSender _smsSender;
 
 		public LoginController(
-			IOptions<IdentityCookieOptions> identityCookieOptions,
 			UserManager<ApplicationUser> userManager,
 			SignInManager<ApplicationUser> signInManager,
 			ILogger<LoginController> logger,
@@ -32,7 +30,6 @@ namespace IdentityServer.Controllers
 			ISmsSender smsSender
 			) : base(userManager, signInManager)
 		{
-			_externalCookieScheme = identityCookieOptions.Value.ExternalCookieAuthenticationScheme;
 			_emailSender = emailSender;
 			_smsSender = smsSender;
 			_logger = logger;
@@ -48,7 +45,7 @@ namespace IdentityServer.Controllers
 		public async Task<IActionResult> Index(string returnUrl = null)
 		{
 			// Clear the existing external cookie to ensure a clean login process
-			await _signInManager.SignOutAsync();
+			await _signInManager.SignOutAsync(); // might need to add identityCookieOptions again if this is behaving weird
 
 			ViewData[RETURN_URL_KEY] = returnUrl;
 			return View();

@@ -109,21 +109,13 @@ namespace IdentityServer.Tests.Controllers
 					Email = "test@test.it"
 				}
 			};
-			var serviceProvider = new ServiceCollection()
-				.AddLogging()
-				.BuildServiceProvider();
-
-			var factory = serviceProvider.GetService<ILoggerFactory>();
-
-			var logger = factory.CreateLogger<LoginController>();
 
 			var controller = new LoginController(
-				identityCookieOptions: AccountMocking.MockFakeIdentityCookieOptions().Object,
 				userManager: AccountMocking.MockFakeUserManager(users).Object,
 				signInManager: AccountMocking.MockFakeSigninManager(users).Object,
 				emailSender: new Mock<IEmailSender>().Object,
 				smsSender: new Mock<ISmsSender>().Object,
-				logger: logger
+				logger: AccountMocking.MockFakeLogger<LoginController>()
 			);
 			var returnUrl = "http://www.google.com";
 
@@ -148,26 +140,18 @@ namespace IdentityServer.Tests.Controllers
 					Email = "test@test.it"
 				}
 			};
-			var serviceProvider = new ServiceCollection()
-				.AddLogging()
-				.BuildServiceProvider();
-
-			var factory = serviceProvider.GetService<ILoggerFactory>();
-
-			var logger = factory.CreateLogger<LoginController>();
 
 			var controller = new LoginController(
-				identityCookieOptions: AccountMocking.MockFakeIdentityCookieOptions().Object,
 				userManager: AccountMocking.MockFakeUserManager(users).Object,
 				signInManager: AccountMocking.MockFakeSigninManager(users).Object,
 				emailSender: new Mock<IEmailSender>().Object,
 				smsSender: new Mock<ISmsSender>().Object,
-				logger: logger
+				logger: AccountMocking.MockFakeLogger<LoginController>()
 			)
 			{
 				Url = new Mock<IUrlHelper>().Object
 			};
-			var returnUrl = "http://www.google.com";
+			var returnUrl = "http://www.google.com"; 
 			LoginViewModel loginViewModel = new LoginViewModel
 			{
 				Identity = "test@test.it"
@@ -183,10 +167,10 @@ namespace IdentityServer.Tests.Controllers
 			var resultUsingUsername = await controller.Index(loginViewModelWithUserName, returnUrl);
 
 			// assert
-			var viewResult = Assert.IsType<RedirectToActionResult>(result); // because return url is external
-			var viewResultUsingUsername = Assert.IsType<RedirectToActionResult>(resultUsingUsername);
-			Assert.Equal("Home", viewResult.ControllerName);
-			Assert.Equal("Home", viewResultUsingUsername.ControllerName);
+			var redirectResult = Assert.IsType<RedirectToActionResult>(result); // because return url is external
+			var redirectResultWithUsername = Assert.IsType<RedirectToActionResult>(resultUsingUsername);
+			Assert.Equal("Home", redirectResult.ControllerName);
+			Assert.Equal("Home", redirectResultWithUsername.ControllerName);
 		}
 
 		[Fact]
@@ -203,21 +187,13 @@ namespace IdentityServer.Tests.Controllers
 					Email = "test@test.it"
 				}
 			};
-			var serviceProvider = new ServiceCollection()
-				.AddLogging()
-				.BuildServiceProvider();
-
-			var factory = serviceProvider.GetService<ILoggerFactory>();
-
-			var logger = factory.CreateLogger<LoginController>();
 
 			var controller = new LoginController(
-				identityCookieOptions: AccountMocking.MockFakeIdentityCookieOptions().Object,
 				userManager: AccountMocking.MockFakeUserManager(badCredentialsUsers).Object,
 				signInManager: AccountMocking.MockFakeSigninManager(emptyUsers, badCredentialsUsers).Object,
 				emailSender: new Mock<IEmailSender>().Object,
 				smsSender: new Mock<ISmsSender>().Object,
-				logger: logger
+				logger: AccountMocking.MockFakeLogger<LoginController>()
 			)
 			{
 				Url = new Mock<IUrlHelper>().Object
@@ -259,21 +235,13 @@ namespace IdentityServer.Tests.Controllers
 					Email = "test@test.it"
 				}
 			};
-			var serviceProvider = new ServiceCollection()
-				.AddLogging()
-				.BuildServiceProvider();
-
-			var factory = serviceProvider.GetService<ILoggerFactory>();
-
-			var logger = factory.CreateLogger<LoginController>();
 
 			var controller = new LoginController(
-				identityCookieOptions: AccountMocking.MockFakeIdentityCookieOptions().Object,
 				userManager: AccountMocking.MockFakeUserManager(badCredentialsUsers).Object,
 				signInManager: AccountMocking.MockFakeSigninManager(emptyUsers, badCredentialsUsers).Object,
 				emailSender: new Mock<IEmailSender>().Object,
 				smsSender: new Mock<ISmsSender>().Object,
-				logger: logger
+				logger: AccountMocking.MockFakeLogger<LoginController>()
 			)
 			{
 				Url = new Mock<IUrlHelper>().Object
@@ -306,21 +274,13 @@ namespace IdentityServer.Tests.Controllers
 					Email = "test@test.it"
 				}
 			};
-			var serviceProvider = new ServiceCollection()
-				.AddLogging()
-				.BuildServiceProvider();
-
-			var factory = serviceProvider.GetService<ILoggerFactory>();
-
-			var logger = factory.CreateLogger<LoginController>();
 
 			var controller = new LoginController(
-				identityCookieOptions: AccountMocking.MockFakeIdentityCookieOptions().Object,
 				userManager: AccountMocking.MockFakeUserManager(lockedOutUsers).Object,
 				signInManager: AccountMocking.MockFakeSigninManager(emptyUsers, emptyUsers, lockedOutUsers).Object,
 				emailSender: new Mock<IEmailSender>().Object,
 				smsSender: new Mock<ISmsSender>().Object,
-				logger: logger
+				logger: AccountMocking.MockFakeLogger<LoginController>()
 			)
 			{
 				Url = new Mock<IUrlHelper>().Object

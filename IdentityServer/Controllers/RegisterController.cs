@@ -8,21 +8,31 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using IdentityServer.Models.AccountViewModels;
 using Microsoft.Extensions.Logging;
+using IdentityServer.Services;
 
 namespace IdentityServer.Controllers
 {
     public class RegisterController : BaseAccountController
 	{
 		private readonly ILogger _logger;
+		private readonly IEmailSender _emailSender;
+		private static readonly string _returnUrlKey = "ReturnUrl";
+		private ISmsSender _smsSender;
 
 		public RegisterController(
 			UserManager<ApplicationUser> userManager, 
 			SignInManager<ApplicationUser> signInManager,
-			ILoggerFactory loggerFactory
+			ILogger<RegisterController> logger,
+			IEmailSender emailSender,
+			ISmsSender smsSender
 			) : base(userManager, signInManager)
 		{
-			_logger = loggerFactory.CreateLogger<RegisterController>();
+			_logger = logger;
+			_emailSender = emailSender;
+			_smsSender = smsSender;
 		}
+
+		public static string RETURN_URL_KEY => _returnUrlKey;
 
 		//
 		// GET: /Register
@@ -30,7 +40,7 @@ namespace IdentityServer.Controllers
 		[AllowAnonymous]
 		public IActionResult Index(string returnUrl = null)
 		{
-			ViewData["ReturnUrl"] = returnUrl;
+			ViewData[RETURN_URL_KEY] = returnUrl;
 			return View();
 		}
 
@@ -41,7 +51,7 @@ namespace IdentityServer.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Index(RegisterViewModel model, string returnUrl = null)
 		{
-			ViewData["ReturnUrl"] = returnUrl;
+			ViewData[RETURN_URL_KEY] = returnUrl;
 			if (ModelState.IsValid)
 			{
 				var user = new ApplicationUser

@@ -19,7 +19,6 @@ namespace IdentityServer.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly string _externalCookieScheme;
         private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
         private readonly ILogger _logger;
@@ -27,17 +26,15 @@ namespace IdentityServer.Controllers
         public ManageController(
           UserManager<ApplicationUser> userManager,
           SignInManager<ApplicationUser> signInManager,
-          IOptions<IdentityCookieOptions> identityCookieOptions,
           IEmailSender emailSender,
           ISmsSender smsSender,
-          ILoggerFactory loggerFactory)
+          ILogger<ManageController> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _externalCookieScheme = identityCookieOptions.Value.ExternalCookieAuthenticationScheme;
             _emailSender = emailSender;
             _smsSender = smsSender;
-            _logger = loggerFactory.CreateLogger<ManageController>();
+            _logger = logger;
         }
 
         //
@@ -346,9 +343,9 @@ namespace IdentityServer.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> LinkLogin(string provider)
         {
-            // Clear the existing external cookie to ensure a clean login process
-            await HttpContext.Authentication.SignOutAsync(_externalCookieScheme);
-
+			// Clear the existing external cookie to ensure a clean login process
+			//await HttpContext.Authentication.SignOutAsync(_externalCookieScheme);
+			await _signInManager.SignOutAsync();
             // Request a redirect to the external login provider to link a login for the current user
             var redirectUrl = Url.Action(nameof(LinkLoginCallback), "Manage");
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, _userManager.GetUserId(User));
@@ -375,9 +372,11 @@ namespace IdentityServer.Controllers
             if (result.Succeeded)
             {
                 message = ManageMessageId.AddLoginSuccess;
-                // Clear the existing external cookie to ensure a clean login process
-                await HttpContext.Authentication.SignOutAsync(_externalCookieScheme);
-            }
+				// Clear the existing external cookie to ensure a clean login process
+				//await HttpContext.Authentication.SignOutAsync(_externalCookieScheme);
+				await _signInManager.SignOutAsync();
+
+			}
             return RedirectToAction(nameof(ManageLogins), new { Message = message });
         }
 
@@ -406,7 +405,7 @@ namespace IdentityServer.Controllers
 
         private Task<ApplicationUser> GetCurrentUserAsync()
         {
-            return _userManager.GetUserAsync(HttpContext.User);
+            return _userManager.GetUserAsync(User);
         }
 
         #endregion

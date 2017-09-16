@@ -22,10 +22,10 @@ namespace IdentityServer.Controllers
 			IHttpContextAccessor httpContextAccessor,
 			IIdentityServerInteractionService interaction,
 			IClientStore clientStore,
-			ILoggerFactory loggerFactory) : base(userManager, signInManager)
+			ILogger<LogoutController> logger) : base(userManager, signInManager)
 		{
 			_account = new AccountService(interaction, httpContextAccessor, clientStore);
-			_logger = loggerFactory.CreateLogger<LogoutController>();
+			_logger = logger;
 
 		}
 
