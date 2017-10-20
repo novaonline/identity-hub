@@ -75,8 +75,8 @@ namespace IdentityServer.Configuration
 								RequireConsent = false,
 
 
-								RedirectUris = { $"http://{CLIENT_HOST_IP}:5005/callback.html" },
-								PostLogoutRedirectUris = { $"http://{CLIENT_HOST_IP}:5005/index.html" },
+								RedirectUris = { $"http://{CLIENT_HOST_IP}:5005/auth-callback" },
+								PostLogoutRedirectUris = { $"http://{CLIENT_HOST_IP}:5005/" },
 								AllowedCorsOrigins = { $"http://{CLIENT_HOST_IP}:5005" },
 
 								AllowedScopes =
