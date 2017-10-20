@@ -127,12 +127,13 @@ namespace IdentityServer
 
 			if (env.IsDevelopment())
 			{
-				app.UseDeveloperExceptionPage();
-				app.UseDatabaseErrorPage();
+
 				app.UseBrowserLink();
 			}
 			else
 			{
+				app.UseDeveloperExceptionPage();
+				app.UseDatabaseErrorPage();
 				app.UseExceptionHandler("/Home/Error");
 			}
 

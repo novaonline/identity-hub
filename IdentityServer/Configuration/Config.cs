@@ -74,17 +74,14 @@ namespace IdentityServer.Configuration
 								AllowAccessTokensViaBrowser = true,
 								RequireConsent = false,
 
+								RedirectUris = new List<string> { $"http://{CLIENT_HOST_IP}:5005/auth-callback" },
+								PostLogoutRedirectUris = new List<string> { $"http://{CLIENT_HOST_IP}:5005/" },
+								AllowedCorsOrigins = new List<string> { $"http://{CLIENT_HOST_IP}:5005" },
 
-								RedirectUris = { $"http://{CLIENT_HOST_IP}:5005/auth-callback" },
-								PostLogoutRedirectUris = { $"http://{CLIENT_HOST_IP}:5005/" },
-								AllowedCorsOrigins = { $"http://{CLIENT_HOST_IP}:5005" },
-
-								AllowedScopes =
-								{
+								AllowedScopes = new List<string> {
 									IdentityServerConstants.StandardScopes.OpenId,
 									IdentityServerConstants.StandardScopes.Profile,
 									IdentityServerConstants.StandardScopes.Email,
-									"RealTimeReality"
 								}
 							}
 				};
