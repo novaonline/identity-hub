@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Http;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
 using System.Linq;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace IdentityServer
 {
@@ -127,13 +128,12 @@ namespace IdentityServer
 
 			if (env.IsDevelopment())
 			{
-
+				app.UseDeveloperExceptionPage();
+				app.UseDatabaseErrorPage();
 				app.UseBrowserLink();
 			}
 			else
 			{
-				app.UseDeveloperExceptionPage();
-				app.UseDatabaseErrorPage();
 				app.UseExceptionHandler("/Home/Error");
 			}
 
@@ -143,7 +143,10 @@ namespace IdentityServer
 				InitializeDatabase(app);
 			}
 
-			app.UseStaticFiles();
+			app.UseStaticFiles(new StaticFileOptions()
+			{
+				ServeUnknownFileTypes = true,
+			});
 
 			app.UseIdentity();
 
