@@ -110,6 +110,7 @@ namespace IdentityServer
 			if (HostingEnvironment.IsProduction())
 			{
 				// create the signing cred
+				identityConfig.AddTemporarySigningCredential();
 			}
 			else
 			{
