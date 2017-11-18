@@ -9,14 +9,19 @@ namespace IdentityServerClient.CLI.Service
 {
     public class IdentityConfigurationContext : ConfigurationDbContext
 	{
-		public IdentityConfigurationContext(DbContextOptions<ConfigurationDbContext> options, ConfigurationStoreOptions storeOptions) 
+		private Options.AddOptions options;
+		public IdentityConfigurationContext(
+			DbContextOptions<ConfigurationDbContext> options, 
+			ConfigurationStoreOptions storeOptions,
+			Options.AddOptions addOptions) 
 			: base(options, storeOptions)
 		{
+			this.options = addOptions;
 		}
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
-			optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=identityserver-dev;Trusted_Connection=True;MultipleActiveResultSets=true");
+			optionsBuilder.UseSqlServer(options.DatabaseConnection ?? "Server=(localdb)\\mssqllocaldb;Database=identityserver-dev;Trusted_Connection=True;MultipleActiveResultSets=true");
 		}
 	}
 }

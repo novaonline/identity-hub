@@ -8,6 +8,8 @@
 		<ApplicationIcon />
 		<OutputType>Exe</OutputType>
 		<StartupObject />
+		<SignAssembly>true</SignAssembly>
+		<AssemblyOriginatorKeyFile>test.snk</AssemblyOriginatorKeyFile>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -18,8 +20,11 @@
 	<ItemGroup>
 		<PackageReference Include="IdentityServer4.AspNetIdentity" Version="2.0.0" />
 		<PackageReference Include="IdentityServer4.EntityFramework" Version="2.1.0" />
-		<PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="2.0.1" />
+		<PackageReference Include="Serilog.AspNetCore" Version="2.1.0" />
+		<PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="2.5.0" />
+		<PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
 	</ItemGroup>
 
 	<ItemGroup>

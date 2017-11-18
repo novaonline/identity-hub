@@ -63,7 +63,10 @@ namespace IdentityServer
 			// globally imply that every controller requires https
 			services.Configure<MvcOptions>(options =>
 			{
-				options.Filters.Add(new RequireHttpsAttribute());
+				if (HostingEnvironment.IsProduction())
+				{
+					options.Filters.Add(new RequireHttpsAttribute());
+				}
 			});
 
 			services.Configure<IdentityOptions>(options =>
@@ -126,8 +129,7 @@ namespace IdentityServer
 			loggerFactory.AddConsole(Configuration.GetSection("Logging"));
 			loggerFactory.AddDebug();
 
-			// rewrite http to https
-			app.UseRewriter(new RewriteOptions().AddRedirectToHttps());
+
 
 			if (env.IsDevelopment())
 			{
@@ -137,6 +139,8 @@ namespace IdentityServer
 			}
 			else
 			{
+				// rewrite http to https
+				app.UseRewriter(new RewriteOptions().AddRedirectToHttps());
 				app.UseExceptionHandler("/Home/Error");
 			}
 

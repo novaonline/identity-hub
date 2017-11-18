@@ -15,7 +15,7 @@ namespace IdentityServerClient.CLI.Service
 		{
 			var storeOptions = new IdentityServer4.EntityFramework.Options.ConfigurationStoreOptions();
 			var contextOptions = new Microsoft.EntityFrameworkCore.DbContextOptions<ConfigurationDbContext>();
-			using (var db = new IdentityConfigurationContext(contextOptions, storeOptions))
+			using (var db = new IdentityConfigurationContext(contextOptions, storeOptions, options))
 			{
 				Client c = new Client()
 				{

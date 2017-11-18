@@ -66,7 +66,6 @@ namespace IdentityServer.Tests.Helpers
 		public static ILogger<T> MockFakeLogger<T>()
 		{
 			var serviceProvider = new ServiceCollection()
-				.AddLogging()
 				.BuildServiceProvider();
 
 			var factory = serviceProvider.GetService<ILoggerFactory>();
