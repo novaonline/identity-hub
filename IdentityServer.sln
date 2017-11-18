@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServ.Rules", "Ident
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer.Tests", "IdentityServer.Tests\IdentityServer.Tests.csproj", "{9E57B9D9-F1E5-485B-8CF9-5935C1C369E3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityServerClient.CLI", "IdentityServerClient.CLI\IdentityServerClient.CLI.csproj", "{C5A9A5C7-9C7F-4D15-89B9-7BF7A29A2A62}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{9E57B9D9-F1E5-485B-8CF9-5935C1C369E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9E57B9D9-F1E5-485B-8CF9-5935C1C369E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9E57B9D9-F1E5-485B-8CF9-5935C1C369E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5A9A5C7-9C7F-4D15-89B9-7BF7A29A2A62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5A9A5C7-9C7F-4D15-89B9-7BF7A29A2A62}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5A9A5C7-9C7F-4D15-89B9-7BF7A29A2A62}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5A9A5C7-9C7F-4D15-89B9-7BF7A29A2A62}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

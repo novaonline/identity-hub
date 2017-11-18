@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +17,7 @@ using Microsoft.AspNetCore.Http;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
 using System.Linq;
-using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.AspNetCore.Identity;
 
 namespace IdentityServer
 {
@@ -59,6 +58,7 @@ namespace IdentityServer
 			services.AddIdentity<ApplicationUser, IdentityRole>()
 				.AddEntityFrameworkStores<ApplicationDbContext>()
 				.AddDefaultTokenProviders();
+			// sub comes from https://github.com/IdentityServer/IdentityServer3.Samples/issues/339
 
 			// globally imply that every controller requires https
 			services.Configure<MvcOptions>(options =>
@@ -68,9 +68,14 @@ namespace IdentityServer
 
 			services.Configure<IdentityOptions>(options =>
 			{
-				options.Cookies.ApplicationCookie.LoginPath = new PathString("/login");
-				options.Cookies.ApplicationCookie.LogoutPath = new PathString("/logout");
+				//options.Cookies.ApplicationCookie.LoginPath = new PathString("/login");
+				//options.Cookies.ApplicationCookie.LogoutPath = new PathString("/logout");
 			});
+
+			// Add application services.
+			services.AddTransient<IEmailSender, AuthMessageSender>();
+			services.AddTransient<ISmsSender, AuthMessageSender>();
+
 
 			services.AddMvc(config =>
 			{
@@ -81,40 +86,37 @@ namespace IdentityServer
 				config.Filters.Add(new AuthorizeFilter(policy));
 			});
 
-			// Add application services.
-			services.AddTransient<IEmailSender, AuthMessageSender>();
-			services.AddTransient<ISmsSender, AuthMessageSender>();
-
 			// Adds IdentityServer
 			var identityConfig = services.AddIdentityServer(o =>
 				{
 					o.UserInteraction.LoginUrl = "/login";
 					o.UserInteraction.LogoutUrl = "/logout";
 				})
-				.AddConfigurationStore(builder =>
+				.AddConfigurationStore(options =>
 				{
-					builder.UseSqlServer(defaultConnectionString, options =>
-					{
-						options.MigrationsAssembly(migrationsAssembly);
-					});
+					options.ConfigureDbContext = buider =>
+						buider.UseSqlServer(defaultConnectionString, sql =>
+						sql.MigrationsAssembly(migrationsAssembly));
 				})
-				.AddOperationalStore(builder =>
+				.AddOperationalStore(options =>
 				{
-					builder.UseSqlServer(defaultConnectionString, options =>
-					{
-						options.MigrationsAssembly(migrationsAssembly);
-					});
-				})
-				.AddAspNetIdentity<ApplicationUser>();
+					options.ConfigureDbContext = builder =>
+						builder.UseSqlServer(defaultConnectionString,
+							sql => sql.MigrationsAssembly(migrationsAssembly));
+
+					// this enables automatic token cleanup. this is optional.
+					options.EnableTokenCleanup = true;
+					options.TokenCleanupInterval = 30;
+				}).AddAspNetIdentity<ApplicationUser>();
 
 			if (HostingEnvironment.IsProduction())
 			{
 				// create the signing cred
-				identityConfig.AddTemporarySigningCredential();
+				identityConfig.AddDeveloperSigningCredential();
 			}
 			else
 			{
-				identityConfig.AddTemporarySigningCredential();
+				identityConfig.AddDeveloperSigningCredential();
 			}
 		}
 
@@ -149,7 +151,7 @@ namespace IdentityServer
 				ServeUnknownFileTypes = true,
 			});
 
-			app.UseIdentity();
+			app.UseAuthentication();
 
 			// Adds IdentityServer
 			app.UseIdentityServer();
@@ -166,6 +168,7 @@ namespace IdentityServer
 
 		private void InitializeDatabase(IApplicationBuilder app)
 		{
+			// https://stackoverflow.com/questions/45574821/identityserver4-persistedgrantdbcontext-configurationdbcontext
 			using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
 			{
 				serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.Migrate();

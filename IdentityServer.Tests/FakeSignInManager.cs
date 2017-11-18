@@ -1,13 +1,11 @@
 ﻿using IdentityServ.Models;
-using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Text;
+
 
 namespace IdentityServer.Tests
 {
@@ -17,7 +15,8 @@ namespace IdentityServer.Tests
 			new HttpContextAccessor(),
 			new Mock<IUserClaimsPrincipalFactory<ApplicationUser>>().Object,
 			new Mock<IOptions<IdentityOptions>>().Object,
-			new Mock<ILogger<SignInManager<ApplicationUser>>>().Object)
+			new Mock<ILogger<SignInManager<ApplicationUser>>>().Object,
+			new Mock<IAuthenticationSchemeProvider>().Object)
 		{
 
 		}

@@ -54,23 +54,12 @@ namespace IdentityServer.Tests.Helpers
 			return fakeSignInManager;
 		}
 
-		public static Mock<IOptions<IdentityCookieOptions>> MockFakeIdentityCookieOptions()
+		public static Mock<IOptions<IdentityConstants>> MockFakeIdentityCookieOptions()
 		{
-			var fakeIdentityCookieOptions = new Mock<IOptions<IdentityCookieOptions>>();
-			var identityCookieOptions = new IdentityCookieOptions
-			{
-				ExternalCookie = new Microsoft.AspNetCore.Builder.CookieAuthenticationOptions
-				{
-					AutomaticChallenge = true,
-					AutomaticAuthenticate = true,
-				},
-				ApplicationCookie = new Microsoft.AspNetCore.Builder.CookieAuthenticationOptions
-				{
-					AutomaticChallenge = true,
-					AutomaticAuthenticate = true,
-				}
-			};
-			fakeIdentityCookieOptions.Setup(p => p.Value).Returns(identityCookieOptions);
+			var fakeIdentityCookieOptions = new Mock<IOptions<IdentityConstants>>();
+			// broke because of .net 2 migration
+			//var identityCookieOptions = IdentityConstants.ExternalScheme;
+			//fakeIdentityCookieOptions.Setup<IOptions<IdentityConstants>, string>(p => p.Value).Returns(identityCookieOptions);
 			return fakeIdentityCookieOptions;
 		}
 

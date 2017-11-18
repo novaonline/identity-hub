@@ -39,7 +39,7 @@ namespace IdentityServer.Controllers
 		public AccountController(
 			UserManager<ApplicationUser> userManager,
 			SignInManager<ApplicationUser> signInManager,
-			IOptions<IdentityCookieOptions> identityCookieOptions,
+			IOptions<IdentityConstants> identityCookieOptions,
 			IEmailSender emailSender,
 			ISmsSender smsSender,
 			ILoggerFactory loggerFactory,
@@ -49,7 +49,7 @@ namespace IdentityServer.Controllers
 			IEventService events
 			) : base(userManager, signInManager)
 		{
-			_externalCookieScheme = identityCookieOptions.Value.ExternalCookieAuthenticationScheme;
+			_externalCookieScheme = IdentityConstants.ExternalScheme;
 			_emailSender = emailSender;
 			_smsSender = smsSender;
 			_logger = loggerFactory.CreateLogger<AccountController>();
