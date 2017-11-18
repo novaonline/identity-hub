@@ -28,6 +28,8 @@ namespace IdentityServer
 
 		public static IWebHost BuildWebHost(string[] args) =>
 			WebHost.CreateDefaultBuilder(args)
+				.UseContentRoot(Directory.GetCurrentDirectory())
+				.UseIISIntegration()
 				.CaptureStartupErrors(true)
 				.UseSetting(WebHostDefaults.DetailedErrorsKey, "true")
 				.UseStartup<Startup>()

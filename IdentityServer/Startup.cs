@@ -66,13 +66,15 @@ namespace IdentityServer
 				.AddDefaultTokenProviders();
 			// sub comes from https://github.com/IdentityServer/IdentityServer3.Samples/issues/339
 
-			// globally imply that every controller requires https
+			// globally implications
 			services.Configure<MvcOptions>(options =>
 			{
-				if (!HostingEnvironment.IsDevelopment())
-				{
-					options.Filters.Add(new RequireHttpsAttribute());
-				}
+				options.Filters.Add(new GlobalExceptionFilter(Logger));
+				options.Filters.Add(new RequireHttpsAttribute());
+				var policy = new AuthorizationPolicyBuilder()
+					.RequireAuthenticatedUser()
+					.Build();
+				options.Filters.Add(new AuthorizeFilter(policy));
 			});
 
 			services.Configure<IdentityOptions>(options =>
@@ -89,13 +91,10 @@ namespace IdentityServer
 			var mvcBuilder = services.AddMvc(config =>
 			{
 				// globally authorize each controller just in case an authorize decor was missed
-				var policy = new AuthorizationPolicyBuilder()
-				 .RequireAuthenticatedUser()
-				 .Build();
-				config.Filters.Add(new AuthorizeFilter(policy));
+
 			});
 
-			mvcBuilder.AddMvcOptions(o => { o.Filters.Add(new GlobalExceptionFilter(Logger)); });
+			//mvcBuilder.AddMvcOptions(o => { o.Filters.Add(new GlobalExceptionFilter(Logger)); });
 
 			// Adds IdentityServer
 			var identityConfig = services.AddIdentityServer(o =>
@@ -134,11 +133,11 @@ namespace IdentityServer
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
 		{
-			loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-			loggerFactory.AddDebug();
-
+			// things for debugging
+			//loggerFactory.AddConsole(Configuration.GetSection("Logging"));
 			if (env.IsDevelopment())
 			{
+				loggerFactory.AddDebug();
 				app.UseDeveloperExceptionPage();
 				app.UseDatabaseErrorPage();
 				app.UseBrowserLink();
@@ -146,7 +145,6 @@ namespace IdentityServer
 			else
 			{
 				// rewrite http to https
-				app.UseRewriter(new RewriteOptions().AddRedirectToHttps());
 				app.UseExceptionHandler("/Home/Error");
 			}
 
@@ -156,12 +154,16 @@ namespace IdentityServer
 				InitializeDatabase(app);
 			}
 
-			app.UseAuthentication();
+			// security
+			app.UseRewriter(new RewriteOptions().AddRedirectToHttps());
+
+			//app.UseAuthentication();
 
 			// Adds IdentityServer
 			app.UseIdentityServer();
 
 			// Add external authentication middleware below. To configure them please see https://go.microsoft.com/fwlink/?LinkID=532715
+			app.UseStaticFiles();
 
 			app.UseMvc(routes =>
 			{

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.10
+VisualStudioVersion = 15.0.26606.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer", "IdentityServer\IdentityServer.csproj", "{C1699F72-8F23-4807-BB5F-CEB0B1D14E21}"
 EndProject
@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServ.Rules", "Ident
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer.Tests", "IdentityServer.Tests\IdentityServer.Tests.csproj", "{9E57B9D9-F1E5-485B-8CF9-5935C1C369E3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityServerClient.CLI", "IdentityServerClient.CLI\IdentityServerClient.CLI.csproj", "{C5A9A5C7-9C7F-4D15-89B9-7BF7A29A2A62}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServerClient.CLI", "IdentityServerClient.CLI\IdentityServerClient.CLI.csproj", "{C5A9A5C7-9C7F-4D15-89B9-7BF7A29A2A62}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
