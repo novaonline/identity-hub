@@ -50,7 +50,8 @@ namespace IdentityServerClient.CLI.Service
 					{
 						IdentityServer4.IdentityServerConstants.StandardScopes.OpenId,
 						IdentityServer4.IdentityServerConstants.StandardScopes.Profile,
-					}
+					},
+					RequireConsent = false,
 				};
 				foreach (var scope in options.Scopes)
 				{
