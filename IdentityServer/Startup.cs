@@ -70,7 +70,7 @@ namespace IdentityServer
 			services.Configure<MvcOptions>(options =>
 			{
 				options.Filters.Add(new GlobalExceptionFilter(Logger));
-				options.Filters.Add(new RequireHttpsAttribute());
+				//options.Filters.Add(new RequireHttpsAttribute());
 				var policy = new AuthorizationPolicyBuilder()
 					.RequireAuthenticatedUser()
 					.Build();
@@ -144,7 +144,6 @@ namespace IdentityServer
 			}
 			else
 			{
-				// rewrite http to https
 				app.UseExceptionHandler("/Home/Error");
 			}
 
@@ -155,7 +154,7 @@ namespace IdentityServer
 			}
 
 			// security
-			app.UseRewriter(new RewriteOptions().AddRedirectToHttps());
+			//app.UseRewriter(new RewriteOptions().AddRedirectToHttps());
 
 			//app.UseAuthentication();
 
