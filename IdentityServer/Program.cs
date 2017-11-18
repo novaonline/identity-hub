@@ -19,7 +19,7 @@ namespace IdentityServer
 			 .MinimumLevel.Override("Microsoft.AspNetCore.Authentication", LogEventLevel.Information)
 			 .Enrich.FromLogContext()
 			 .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}", theme: AnsiConsoleTheme.Literate)
-			 .WriteTo.ApplicationInsightsTraces("65bf1cd7-7799-4619-a51c-a3c07ebb89af")
+			 .WriteTo.ApplicationInsightsEvents("65bf1cd7-7799-4619-a51c-a3c07ebb89af")
 			 .CreateLogger();
 
 			BuildWebHost(args).Run();
@@ -29,6 +29,7 @@ namespace IdentityServer
 		public static IWebHost BuildWebHost(string[] args) =>
 			WebHost.CreateDefaultBuilder(args)
 				.CaptureStartupErrors(true)
+				.UseSetting(WebHostDefaults.DetailedErrorsKey, "true")
 				.UseStartup<Startup>()
 				.UseSerilog()
 				.Build();

@@ -18,12 +18,14 @@ using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
 using System.Linq;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Filters;
+using System;
 
 namespace IdentityServer
 {
 	public class Startup
 	{
-		public Startup(IHostingEnvironment env)
+		public Startup(IHostingEnvironment env, ILoggerFactory logger)
 		{
 			var builder = new ConfigurationBuilder()
 				.SetBasePath(env.ContentRootPath)
@@ -40,10 +42,13 @@ namespace IdentityServer
 			builder.AddEnvironmentVariables();
 			Configuration = builder.Build();
 			HostingEnvironment = env;
+			Logger = logger.CreateLogger("start up");
 		}
 
 		public IConfigurationRoot Configuration { get; }
 		public IHostingEnvironment HostingEnvironment { get; }
+		public ILogger Logger { get; }
+
 
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
@@ -81,7 +86,7 @@ namespace IdentityServer
 			services.AddTransient<ISmsSender, AuthMessageSender>();
 
 
-			services.AddMvc(config =>
+			var mvcBuilder = services.AddMvc(config =>
 			{
 				// globally authorize each controller just in case an authorize decor was missed
 				var policy = new AuthorizationPolicyBuilder()
@@ -89,6 +94,8 @@ namespace IdentityServer
 				 .Build();
 				config.Filters.Add(new AuthorizeFilter(policy));
 			});
+
+			mvcBuilder.AddMvcOptions(o => { o.Filters.Add(new GlobalExceptionFilter(Logger)); });
 
 			// Adds IdentityServer
 			var identityConfig = services.AddIdentityServer(o =>
@@ -204,6 +211,26 @@ namespace IdentityServer
 					context.SaveChanges();
 				}
 			}
+		}
+	}
+
+	public class GlobalExceptionFilter : IExceptionFilter
+	{
+		private readonly ILogger _logger;
+
+		public GlobalExceptionFilter(ILogger logger)
+		{
+			if (logger == null)
+			{
+				throw new ArgumentNullException(nameof(logger));
+			}
+
+			this._logger = logger;
+		}
+
+		public void OnException(ExceptionContext context)
+		{
+			this._logger.LogError("GlobalExceptionFilter", context.Exception);
 		}
 	}
 }
