@@ -64,7 +64,7 @@ namespace IdentityServer
 			// globally imply that every controller requires https
 			services.Configure<MvcOptions>(options =>
 			{
-				if (HostingEnvironment.IsProduction())
+				if (!HostingEnvironment.IsDevelopment())
 				{
 					options.Filters.Add(new RequireHttpsAttribute());
 				}
@@ -129,8 +129,6 @@ namespace IdentityServer
 		{
 			loggerFactory.AddConsole(Configuration.GetSection("Logging"));
 			loggerFactory.AddDebug();
-
-
 
 			if (env.IsDevelopment())
 			{
