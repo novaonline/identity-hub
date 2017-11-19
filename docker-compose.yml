@@ -4,5 +4,5 @@ services:
   identityserver:
     image: identityserver
     build:
-      context: ./IdentityServer
+      context: .
       dockerfile: Dockerfile

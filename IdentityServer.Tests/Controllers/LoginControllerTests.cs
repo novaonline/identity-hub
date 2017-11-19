@@ -305,7 +305,7 @@ namespace IdentityServer.Tests.Controllers
 			var viewResult = Assert.IsType<ViewResult>(result); // because return url is external
 			var viewResultUsingUsername = Assert.IsType<ViewResult>(resultUsingUsername);
 			// wish I could figure out more information about the view passed.
-			Assert.Equal(viewResult.ViewName, "Lockout");
+			Assert.Equal("Lockout", viewResult.ViewName);
 
 		}
 

@@ -4,9 +4,7 @@ services:
   identityserver:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - CERT_SECRET
     ports:
-      - "80"
-networks:
-  default:
-    external:
-      name: nat
+      - "8000:80"
+      - "4000:443"

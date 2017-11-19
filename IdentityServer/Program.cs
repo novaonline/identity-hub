@@ -5,11 +5,12 @@ using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
 using Microsoft.Extensions.Configuration;
 using System.IO;
+using System.Net;
 
 namespace IdentityServer
 {
 	public class Program
-    {
+	{
 		public static void Main(string[] args)
 		{
 			Log.Logger = new LoggerConfiguration()
@@ -21,18 +22,23 @@ namespace IdentityServer
 			 .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}", theme: AnsiConsoleTheme.Literate)
 			 .WriteTo.ApplicationInsightsEvents("65bf1cd7-7799-4619-a51c-a3c07ebb89af")
 			 .CreateLogger();
-
 			BuildWebHost(args).Run();
 
 		}
 
-		public static IWebHost BuildWebHost(string[] args) =>
-			WebHost.CreateDefaultBuilder(args)
-				.UseContentRoot(Directory.GetCurrentDirectory())
+		public static IWebHost BuildWebHost(string[] args)
+		{
+			var hostConfig = new ConfigurationBuilder()
+							   .AddEnvironmentVariables()
+							   .Build();
+
+			return WebHost.CreateDefaultBuilder(args)
 				.CaptureStartupErrors(true)
 				.UseSetting(WebHostDefaults.DetailedErrorsKey, "true")
 				.UseStartup<Startup>()
 				.UseSerilog()
 				.Build();
+		}
+
 	}
 }

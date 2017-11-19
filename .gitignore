@@ -261,3 +261,6 @@ __pycache__/
 *.pyc
 /IdentityServer/appsettings.Production.json
 /IdentityServer/tempkey.rsa
+
+#Custom
+*.pubxml

@@ -2,15 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>netcoreapp2.0</TargetFramework>
-		<AssetTargetFallback>$(AssetTargetFallback);portable-net45+win8+wp8+wpa81;</AssetTargetFallback>
-		<UserSecretsId>aspnet-IdentityServer-4992EF26-06F7-4D69-A634-73FFECF67DC5</UserSecretsId>
-		<DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
-		<ApplicationIcon />
-		<OutputType>Exe</OutputType>
-		<StartupObject />
-		<SignAssembly>true</SignAssembly>
-		<AssemblyOriginatorKeyFile>test.snk</AssemblyOriginatorKeyFile>
-		<MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
+		<UserSecretsId>User-Secret-ID</UserSecretsId>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -40,12 +32,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Update="appsettings.Development.json">
+	  <None Update="cert.pfx">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Update="appsettings.json">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
+	  </None>
 	</ItemGroup>
 
 </Project>
