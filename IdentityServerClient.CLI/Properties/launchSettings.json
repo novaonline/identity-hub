@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "IdentityServerClient.CLI": {
+      "commandName": "Project",
+      "commandLineArgs": "add-admin -d \"Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=F:\\Databases\\identity_development.mdf;Integrated Security=True;Connect Timeout=30\" -e \"abc123@example.com\""
+    }
+  }
+}

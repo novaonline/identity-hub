@@ -1,11 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26730.10
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer", "IdentityServer\IdentityServer.csproj", "{C1699F72-8F23-4807-BB5F-CEB0B1D14E21}"
-EndProject
-Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{381DEA01-921E-439B-917A-CBF632212BDC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServ.Models", "IdentityServ.Models\IdentityServ.Models.csproj", "{3C1080F3-3D18-4378-ACD1-0452F0D4A62C}"
 EndProject
@@ -13,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServ.Rules", "Ident
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer.Tests", "IdentityServer.Tests\IdentityServer.Tests.csproj", "{9E57B9D9-F1E5-485B-8CF9-5935C1C369E3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityServerClient.CLI", "IdentityServerClient.CLI\IdentityServerClient.CLI.csproj", "{C5A9A5C7-9C7F-4D15-89B9-7BF7A29A2A62}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServerClient.CLI", "IdentityServerClient.CLI\IdentityServerClient.CLI.csproj", "{C5A9A5C7-9C7F-4D15-89B9-7BF7A29A2A62}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,10 +23,6 @@ Global
 		{C1699F72-8F23-4807-BB5F-CEB0B1D14E21}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C1699F72-8F23-4807-BB5F-CEB0B1D14E21}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C1699F72-8F23-4807-BB5F-CEB0B1D14E21}.Release|Any CPU.Build.0 = Release|Any CPU
-		{381DEA01-921E-439B-917A-CBF632212BDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{381DEA01-921E-439B-917A-CBF632212BDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{381DEA01-921E-439B-917A-CBF632212BDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{381DEA01-921E-439B-917A-CBF632212BDC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3C1080F3-3D18-4378-ACD1-0452F0D4A62C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3C1080F3-3D18-4378-ACD1-0452F0D4A62C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C1080F3-3D18-4378-ACD1-0452F0D4A62C}.Release|Any CPU.ActiveCfg = Release|Any CPU

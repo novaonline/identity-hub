@@ -17,7 +17,7 @@ namespace IdentityServer.Controllers
 		private readonly ILogger _logger;
 		private readonly IEmailSender _emailSender;
 		private static readonly string _returnUrlKey = "ReturnUrl";
-		private ISmsSender _smsSender;
+		private readonly ISmsSender _smsSender;
 
 		public RegisterController(
 			UserManager<ApplicationUser> userManager, 

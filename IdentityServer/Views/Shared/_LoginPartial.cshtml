@@ -6,21 +6,21 @@
 
 @if (SignInManager.IsSignedIn(User))
 {
-    <form asp-area="" asp-controller="Logout" asp-action="Index" method="post" id="logoutForm" class="navbar-right">
-        <ul class="nav navbar-nav navbar-right">
-            <li>
-                <a asp-area="" asp-controller="Manage" asp-action="Index" title="Manage">Hello @UserManager.GetUserName(User)!</a>
-            </li>
-            <li>
-                <button type="submit" class="btn btn-link navbar-btn navbar-link">Log out</button>
-            </li>
-        </ul>
-    </form>
+	<ul class="nav navbar-nav navbar-right">
+		<li>
+			<a asp-area="" asp-controller="Manage" asp-action="Index" title="Manage">Hello @UserManager.GetUserName(User)!</a>
+		</li>
+		<li>
+			<form asp-area="" asp-controller="Logout" asp-action="Index" method="post" id="logoutForm" class="navbar-right">
+				<button type="submit" class="btn btn-link navbar-btn navbar-link">Log out</button>
+			</form>
+		</li>
+	</ul>
 }
 else
 {
-    <ul class="nav navbar-nav navbar-right">
-        <li><a asp-area="" asp-controller="Register" asp-action="Index">Register</a></li>
-        <li><a asp-area="" asp-controller="Login" asp-action="Index">Log in</a></li>
-    </ul>
+	<ul class="nav navbar-nav navbar-right">
+		<li><a asp-area="" asp-controller="Register" asp-action="Index">Register</a></li>
+		<li><a asp-area="" asp-controller="Login" asp-action="Index">Log in</a></li>
+	</ul>
 }

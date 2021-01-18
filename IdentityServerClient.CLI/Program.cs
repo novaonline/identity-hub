@@ -1,6 +1,5 @@
 ﻿using IdentityServerClient.CLI.Options;
 using CommandLine;
-using System;
 using IdentityServerClient.CLI.Service;
 
 namespace IdentityServerClient.CLI
@@ -8,15 +7,13 @@ namespace IdentityServerClient.CLI
 	class Program
 	{
 		/// <summary>
-		/// Quickly create, remove and update clients
+		/// Quickly add an admin when starting application for first time
 		/// </summary>
 		/// <param name="args"></param>
 		static int Main(string[] args)
 		{
-			return Parser.Default.ParseArguments<AddOptions, RemoveOptions, UpdateOptions>(args).MapResult(
-				(AddOptions opts) => ClientService.Add(opts),
-				(RemoveOptions opts) => ClientService.Remove(opts),
-				(UpdateOptions opts) => ClientService.Update(opts),
+			return Parser.Default.ParseArguments<AddAdminOptions>(args).MapResult(
+				(AddAdminOptions opts) => AdminService.AddAsync(opts).Result,
 				errs => 1);
 		}
 	}

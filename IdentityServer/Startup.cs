@@ -20,65 +20,53 @@ using System.Linq;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;
+using Microsoft.Extensions.Hosting;
+using IdentityServer.Helpers.Migration;
+using IdentityServer.Helpers.Filters;
 
 namespace IdentityServer
 {
 	public class Startup
 	{
-		public Startup(IHostingEnvironment env, ILoggerFactory logger)
-		{
-			var builder = new ConfigurationBuilder()
-				.SetBasePath(env.ContentRootPath)
-				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-				.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
-				.AddEnvironmentVariables();
-
-			if (env.IsDevelopment())
-			{
-				// For more details on using the user secret store see https://go.microsoft.com/fwlink/?LinkID=532709
-				builder.AddUserSecrets<Startup>();
-			}
-
-			builder.AddEnvironmentVariables();
-			Configuration = builder.Build();
-			HostingEnvironment = env;
-			Logger = logger.CreateLogger("start up");
-		}
-
-		public IConfigurationRoot Configuration { get; }
-		public IHostingEnvironment HostingEnvironment { get; }
+		public IConfiguration Configuration { get; }
 		public ILogger Logger { get; }
+		public IWebHostEnvironment Env { get;  }
 
+		public Startup(IConfiguration configuration, ILoggerFactory logger, IWebHostEnvironment env)
+		{
+			Configuration = configuration;
+			Logger = logger.CreateLogger("start up");
+			Env = env;
+		}
 
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
-			// get the assembly 
-			var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
-			var defaultConnectionString = Configuration.GetConnectionString("DefaultConnection");
-			// Add framework services.
-			services.AddDbContext<ApplicationDbContext>(options =>
-				options.UseSqlServer(defaultConnectionString,
-				b => b.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name)));
+			services.AddControllersWithViews();
+			services.AddRazorPages().AddRazorRuntimeCompilation();
+
+			services.AddDbContext<ApplicationDbContext>(builder => builder.UseDefault(Configuration));
 
 			services.AddIdentity<ApplicationUser, IdentityRole>()
 				.AddEntityFrameworkStores<ApplicationDbContext>()
 				.AddDefaultTokenProviders();
-			// sub comes from https://github.com/IdentityServer/IdentityServer3.Samples/issues/339
-
-			// globally imply that every controller requires https
-			services.Configure<MvcOptions>(options =>
+			if (Env.IsDevelopment())
 			{
-				if (!HostingEnvironment.IsDevelopment())
+				services.Configure<IdentityOptions>(options =>
 				{
-					options.Filters.Add(new RequireHttpsAttribute());
-				}
-			});
+					options.Password.RequireDigit = true;
+					options.Password.RequireLowercase = true;
+					options.Password.RequireUppercase = true;
+					options.Password.RequiredUniqueChars = 0;
+				});
+			}
 
-			services.Configure<IdentityOptions>(options =>
+			services.ConfigureApplicationCookie(options =>
 			{
-				//options.Cookies.ApplicationCookie.LoginPath = new PathString("/login");
-				//options.Cookies.ApplicationCookie.LogoutPath = new PathString("/logout");
+				options.ExpireTimeSpan = TimeSpan.FromDays(7);
+				options.LoginPath = "/login";
+				options.LogoutPath = "/logout";
+				options.SlidingExpiration = true;
 			});
 
 			// Add application services.
@@ -98,139 +86,65 @@ namespace IdentityServer
 			mvcBuilder.AddMvcOptions(o => { o.Filters.Add(new GlobalExceptionFilter(Logger)); });
 
 			// Adds IdentityServer
-			var identityConfig = services.AddIdentityServer(o =>
+			var identityBuilder = services.AddIdentityServer(o =>
 				{
+					o.Events.RaiseErrorEvents = true;
+					o.Events.RaiseInformationEvents = true;
+					o.Events.RaiseFailureEvents = true;
+					o.Events.RaiseSuccessEvents = true;
 					o.UserInteraction.LoginUrl = "/login";
 					o.UserInteraction.LogoutUrl = "/logout";
 				})
 				.AddConfigurationStore(options =>
 				{
-					options.ConfigureDbContext = buider =>
-						buider.UseSqlServer(defaultConnectionString, sql =>
-						sql.MigrationsAssembly(migrationsAssembly));
+					options.ConfigureDbContext = buider => buider.UseDefault(Configuration);
+					options.DefaultSchema = "IdentityConfigure";
 				})
 				.AddOperationalStore(options =>
 				{
-					options.ConfigureDbContext = builder =>
-						builder.UseSqlServer(defaultConnectionString,
-							sql => sql.MigrationsAssembly(migrationsAssembly));
-
+					options.ConfigureDbContext = builder => builder.UseDefault(Configuration);
+					options.DefaultSchema = "IdentityOperation";
 					// this enables automatic token cleanup. this is optional.
 					options.EnableTokenCleanup = true;
 					options.TokenCleanupInterval = 30;
 				}).AddAspNetIdentity<ApplicationUser>();
 
-			if (HostingEnvironment.IsProduction())
+			if (Env.IsDevelopment())
 			{
-				// create the signing cred
-				identityConfig.AddDeveloperSigningCredential();
-			}
-			else
+				identityBuilder.AddDeveloperSigningCredential();
+			} else
 			{
-				identityConfig.AddDeveloperSigningCredential();
+				// TODO
 			}
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+		public void Configure(IApplicationBuilder app)
 		{
-			loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-			loggerFactory.AddDebug();
+			app.UseStaticFiles();
 
-			if (env.IsDevelopment())
+			app.InitializeDatabase(Env);
+
+			if (Env.IsDevelopment())
 			{
 				app.UseDeveloperExceptionPage();
-				app.UseDatabaseErrorPage();
 				app.UseBrowserLink();
 			}
 			else
 			{
-				// rewrite http to https
-				app.UseRewriter(new RewriteOptions().AddRedirectToHttps());
 				app.UseExceptionHandler("/Home/Error");
 			}
 
-			// this will do the initial DB population
-			if (env.IsDevelopment())
-			{
-				InitializeDatabase(app);
-			}
-
-			app.UseAuthentication();
-
-			// Adds IdentityServer
+			app.UseRouting();
+			app.UseHttpsRedirection();
 			app.UseIdentityServer();
-
-			// Add external authentication middleware below. To configure them please see https://go.microsoft.com/fwlink/?LinkID=532715
-
-			app.UseMvc(routes =>
+			app.UseAuthentication();
+			app.UseAuthorization();
+			app.UseEndpoints(endpoints =>
 			{
-				routes.MapRoute(
-					name: "default",
-					template: "{controller=Home}/{action=Index}/{id?}");
+				endpoints.MapDefaultControllerRoute();
 			});
-		}
-
-		private void InitializeDatabase(IApplicationBuilder app)
-		{
-			// https://stackoverflow.com/questions/45574821/identityserver4-persistedgrantdbcontext-configurationdbcontext
-			using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
-			{
-				serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.Migrate();
-				serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
-
-				var context = serviceScope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
-				context.Database.Migrate();
-				if (!context.Clients.Any())
-				{
-					context.Clients.RemoveRange(context.Clients.AsEnumerable());
-					foreach (var client in Config.GetClients())
-					{
-						context.Clients.Add(client.ToEntity());
-					}
-					context.SaveChanges();
-				}
-
-				if (!context.IdentityResources.Any())
-				{
-					context.IdentityResources.RemoveRange(context.IdentityResources.AsEnumerable());
-					foreach (var resource in Config.GetIdentityResources())
-					{
-						context.IdentityResources.Add(resource.ToEntity());
-					}
-					context.SaveChanges();
-				}
-
-				if (!context.ApiResources.Any())
-				{
-					context.ApiResources.RemoveRange(context.ApiResources.AsEnumerable());
-					foreach (var resource in Config.GetApiResources())
-					{
-						context.ApiResources.Add(resource.ToEntity());
-					}
-					context.SaveChanges();
-				}
-			}
-		}
-	}
-
-	public class GlobalExceptionFilter : IExceptionFilter
-	{
-		private readonly ILogger _logger;
-
-		public GlobalExceptionFilter(ILogger logger)
-		{
-			if (logger == null)
-			{
-				throw new ArgumentNullException(nameof(logger));
-			}
-
-			this._logger = logger;
-		}
-
-		public void OnException(ExceptionContext context)
-		{
-			this._logger.LogError("GlobalExceptionFilter", context.Exception);
+			app.UseHttpsRedirection();
 		}
 	}
 }

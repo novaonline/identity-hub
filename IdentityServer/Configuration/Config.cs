@@ -1,4 +1,5 @@
-﻿using IdentityServer4;
+﻿using IdentityModel;
+using IdentityServer4;
 using IdentityServer4.Models;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -10,16 +11,38 @@ namespace IdentityServer.Configuration
 {
 	/// <summary>
 	/// NOTE: This is strictly development configurations
+	/// https://identityserver4.readthedocs.io/en/latest/topics/grant_types.html
+	/// https://oauth.net/2/grant-types/
+	/// https://identityserver4.readthedocs.io/en/latest/topics/clients.html
+	/// https://oauth.tools/
 	/// </summary>
 	public class Config
 	{
+		public static IEnumerable<ApiScope> GetApiScopes()
+		{
+			return new List<ApiScope>
+			{
+				new ApiScope(name:"portfolio.read", displayName: "Portfolio read access"),
+				new ApiScope(name:"portfolio.write", displayName: "Portfolio write access"),
+				new ApiScope(name:"portfolio.delete", displayName: "Portfolio delete access"),
+				new ApiScope(name:"manage", displayName: "Admin Access")
+			};
+		}
+
 		// scopes define the API resources in your system
 		public static IEnumerable<ApiResource> GetApiResources()
 		{
 			return new List<ApiResource>
 			{
 				// database this
-                new ApiResource("RealTimeReality", "Real Time Reality API")
+                new ApiResource("Portfolio", "The Portfolio API") {
+					ApiSecrets =
+					{
+						new Secret("secret".Sha256())
+					},
+					Scopes = GetApiScopes().Where(a => a.Name.StartsWith("portfolio")).Select(x => x.Name).ToList()
+				}
+				// TODO: add realtime reality
 			};
 		}
 
@@ -30,58 +53,22 @@ namespace IdentityServer.Configuration
 			string CLIENT_HOST_IP = "localhost";
 			return new List<Client>
 						{
-							new Client
-							{
-								ClientId = "client",
-								AllowedGrantTypes = GrantTypes.ClientCredentials,
-
-								ClientSecrets =
-								{
-									new Secret("secret".Sha256())
-								},
-								AllowedScopes = { "RealTimeReality" }
-							},
-							new Client
-							{
-								ClientId = "mvc",
-								ClientName = "MVC Client",
-								AllowedGrantTypes = GrantTypes.Implicit,
-
-								RequireConsent = false,
-
-								ClientSecrets =
-								{
-									new Secret("secret".Sha256())
-								},
-
-								RedirectUris           = { "http://localhost:5002/signin-oidc" },
-								PostLogoutRedirectUris = { "http://localhost:5002/signout-callback-oidc" },
-
-								AllowedScopes =
-								{
-									IdentityServerConstants.StandardScopes.OpenId,
-									IdentityServerConstants.StandardScopes.Profile,
-									"RealTimeReality"
-								},
-								AllowOfflineAccess = true
-							},
 							// JavaScript Client
 							new Client
 							{
 								ClientId = "js_oidc",
 								ClientName = "JavaScript Client",
-								AllowedGrantTypes = GrantTypes.Implicit,
+								AllowedGrantTypes = GrantTypes.ClientCredentials,
 								AllowAccessTokensViaBrowser = true,
 								RequireConsent = false,
-
 								RedirectUris = new List<string> { $"http://{CLIENT_HOST_IP}:5005/auth-callback" },
 								PostLogoutRedirectUris = new List<string> { $"http://{CLIENT_HOST_IP}:5005/" },
 								AllowedCorsOrigins = new List<string> { $"http://{CLIENT_HOST_IP}:5005" },
-
 								AllowedScopes = new List<string> {
 									IdentityServerConstants.StandardScopes.OpenId,
 									IdentityServerConstants.StandardScopes.Profile,
 									IdentityServerConstants.StandardScopes.Email,
+									"Portfolio"
 								}
 							}
 				};
@@ -94,6 +81,7 @@ namespace IdentityServer.Configuration
 			{
 				new IdentityResources.OpenId(),
 				new IdentityResources.Profile(),
+				new IdentityResources.Email()
 			};
 		}
 	}
