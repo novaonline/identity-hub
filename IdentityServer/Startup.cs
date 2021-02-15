@@ -20,136 +20,131 @@ using System.Linq;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;
-using IdentityServer.Helpers;
+using Microsoft.Extensions.Hosting;
+using IdentityServer.Helpers.Migration;
+using IdentityServer.Helpers.Filters;
 
 namespace IdentityServer
 {
 	public class Startup
 	{
-		public IConfigurationRoot Configuration { get; }
-		public IHostingEnvironment HostingEnvironment { get; }
+		public IConfiguration Configuration { get; }
 		public ILogger Logger { get; }
+		public IWebHostEnvironment Env { get;  }
 
-		public Startup(IHostingEnvironment env, ILoggerFactory logger)
+		public Startup(IConfiguration configuration, ILoggerFactory logger, IWebHostEnvironment env)
 		{
-			// Setting up Configuration 
-			var builder = new ConfigurationBuilder()
-				.SetBasePath(env.ContentRootPath)
-				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-				.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
-				.AddEnvironmentVariables();
-			if (env.IsDevelopment())
-			{
-				// For more details on using the user secret store see https://go.microsoft.com/fwlink/?LinkID=532709
-				builder.AddUserSecrets<Startup>();
-			}
-			Configuration = builder.Build();
-			HostingEnvironment = env;
-			Logger = logger.CreateLogger("Startup");
+			Configuration = configuration;
+			Logger = logger.CreateLogger("start up");
+			Env = env;
 		}
 
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
-			// get the assembly 
-			var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
-			var defaultConnectionString = Configuration.GetConnectionString("DefaultConnection");
-			Logger.LogInformation($"Connection string fetched with a length of {defaultConnectionString.Length}");
+			services.AddControllersWithViews();
+			services.AddRazorPages().AddRazorRuntimeCompilation();
 
-			// Add framework services.
-			services.AddDbContext<ApplicationDbContext>(options =>
-				options.UseSqlServer(defaultConnectionString,
-				b => b.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name)));
+			services.AddDbContext<ApplicationDbContext>(builder => builder.UseDefault(Configuration));
 
 			services.AddIdentity<ApplicationUser, IdentityRole>()
 				.AddEntityFrameworkStores<ApplicationDbContext>()
 				.AddDefaultTokenProviders();
-
-			// setup global implications (i.e. defaults)
-			services.Configure<MvcOptions>(options =>
+			if (Env.IsDevelopment())
 			{
-				options.Filters.Add(new GlobalExceptionFilter(Logger)); // exception handling
-				options.Filters.Add(new RequireHttpsAttribute()); // enforce ssl 
-				var policy = new AuthorizationPolicyBuilder()
-					.RequireAuthenticatedUser()
-					.Build();
-				options.Filters.Add(new AuthorizeFilter(policy)); // authorize by default
+				services.Configure<IdentityOptions>(options =>
+				{
+					options.Password.RequireDigit = true;
+					options.Password.RequireLowercase = true;
+					options.Password.RequireUppercase = true;
+					options.Password.RequiredUniqueChars = 0;
+				});
+			}
+
+			services.ConfigureApplicationCookie(options =>
+			{
+				options.ExpireTimeSpan = TimeSpan.FromDays(7);
+				options.LoginPath = "/login";
+				options.LogoutPath = "/logout";
+				options.SlidingExpiration = true;
 			});
 
-			// Additional DI stuff
+			// Add application services.
 			services.AddTransient<IEmailSender, AuthMessageSender>();
 			services.AddTransient<ISmsSender, AuthMessageSender>();
 
+
+			var mvcBuilder = services.AddMvc(config =>
+			{
+				// globally authorize each controller just in case an authorize decor was missed
+				var policy = new AuthorizationPolicyBuilder()
+				 .RequireAuthenticatedUser()
+				 .Build();
+				config.Filters.Add(new AuthorizeFilter(policy));
+			});
+
+			mvcBuilder.AddMvcOptions(o => { o.Filters.Add(new GlobalExceptionFilter(Logger)); });
+
 			// Adds IdentityServer
-			var identityConfig = services.AddIdentityServer(o =>
+			var identityBuilder = services.AddIdentityServer(o =>
 				{
+					o.Events.RaiseErrorEvents = true;
+					o.Events.RaiseInformationEvents = true;
+					o.Events.RaiseFailureEvents = true;
+					o.Events.RaiseSuccessEvents = true;
 					o.UserInteraction.LoginUrl = "/login";
 					o.UserInteraction.LogoutUrl = "/logout";
 				})
 				.AddConfigurationStore(options =>
 				{
-					options.ConfigureDbContext = buider =>
-						buider.UseSqlServer(defaultConnectionString, sql =>
-						sql.MigrationsAssembly(migrationsAssembly));
+					options.ConfigureDbContext = buider => buider.UseDefault(Configuration);
+					options.DefaultSchema = "IdentityConfigure";
 				})
 				.AddOperationalStore(options =>
 				{
-					options.ConfigureDbContext = builder =>
-						builder.UseSqlServer(defaultConnectionString,
-							sql => sql.MigrationsAssembly(migrationsAssembly));
-
+					options.ConfigureDbContext = builder => builder.UseDefault(Configuration);
+					options.DefaultSchema = "IdentityOperation";
 					// this enables automatic token cleanup. this is optional.
-					// defaulted to every hour
 					options.EnableTokenCleanup = true;
-				})
-				.AddAspNetIdentity<ApplicationUser>();
+					options.TokenCleanupInterval = 30;
+				}).AddAspNetIdentity<ApplicationUser>();
 
-			if (HostingEnvironment.IsProduction())
+			if (Env.IsDevelopment())
 			{
-				// create the signing cred
-				identityConfig.AddDeveloperSigningCredential();
-			}
-			else
+				identityBuilder.AddDeveloperSigningCredential();
+			} else
 			{
-				identityConfig.AddSigningCredential(IdentityServerBuilderExtensionsCrypto.CreateRsaSecurityKey());
+				// TODO
 			}
-			services.AddMvc();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+		public void Configure(IApplicationBuilder app)
 		{
-			Logger.LogDebug("Begin Piping");
+			app.UseStaticFiles();
 
-			// things for debugging
-			if (env.IsDevelopment())
+			app.InitializeDatabase(Env);
+
+			if (Env.IsDevelopment())
 			{
-				loggerFactory.AddDebug();
 				app.UseDeveloperExceptionPage();
-				app.UseDatabaseErrorPage();
 				app.UseBrowserLink();
 			}
 			else
 			{
 				app.UseExceptionHandler("/Home/Error");
 			}
-			
-			// rewrites
-			app.UseRewriter(new RewriteOptions().AddRedirectToHttps());
 
-			// make sure that a person is authorized
-			app.UseAuthentication();
-
-			// use IdentityServer
+			app.UseRouting();
+			app.UseHttpsRedirection();
 			app.UseIdentityServer();
-
-			// use static files
-			app.UseStaticFiles();
-
-			// finally, use mvc
-			app.UseMvcWithDefaultRoute();
-
-			Logger.LogDebug("End Piping");
+			app.UseAuthentication();
+			app.UseAuthorization();
+			app.UseEndpoints(endpoints =>
+			{
+				endpoints.MapDefaultControllerRoute();
+			});
+			app.UseHttpsRedirection();
 		}
 	}
 }

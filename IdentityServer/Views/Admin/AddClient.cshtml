@@ -1,0 +1,36 @@
+﻿@model IdentityConfigurationViewModel
+@{
+	ViewData["Title"] = "Clients";
+}
+
+<div class="row">
+	<div class="col-md-12">
+		@if (Model.ResponsesAfterCreate.Any())
+		{
+			<p>
+				Some secrets have been created for the new Api Resources
+			</p>
+			@foreach (var response in Model.ResponsesAfterCreate)
+			{
+				<dl>
+
+
+					<dt>Api Scope Name</dt>
+					<dd>@response.ApiScopeName</dd>
+					<dt>Secret</dt>
+					<dd>@response.Secret</dd>
+					<dt>Secret PlainText</dt>
+					<dd>@response.SecretPlainText</dd>
+				</dl>
+			}
+		}
+		<div class="row">
+			<div class="col-xs-12">
+				<p>
+					Client Created! <a asp-action="Index">Return to Admin Page</a>
+				</p>
+			</div>
+		</div>
+
+	</div>
+</div>

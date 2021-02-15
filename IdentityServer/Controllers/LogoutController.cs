@@ -8,6 +8,9 @@ using IdentityServer.Services;
 using Microsoft.AspNetCore.Identity;
 using IdentityServ.Models;
 using Microsoft.Extensions.Logging;
+using IdentityServer4;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace IdentityServer.Controllers
 {
@@ -48,15 +51,25 @@ namespace IdentityServer.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Index(LogoutInputModel model = null)
 		{
-			LoggedOutViewModel vm = new LoggedOutViewModel();
-			if (model != null)
+			var prop = new AuthenticationProperties()
+			{
+				RedirectUri = "/"
+			};
+			await _signInManager.SignOutAsync();
+			_logger.LogInformation("User logged out.");
+
+			// social login part
+			LoggedOutViewModel vm = new LoggedOutViewModel()
+			{
+				AutomaticRedirectAfterSignOut = true,
+				PostLogoutRedirectUri = "/",
+				ClientName = "Identity Server"
+			};
+			if (model != null && model.LogoutId != null)
 			{
 				vm = await _account.BuildLoggedOutViewModelAsync(model.LogoutId);
 			}
-			// social login part
-
-			await _signInManager.SignOutAsync();
-			_logger.LogInformation(4, "User logged out.");
+			
 			return View("LoggedOut", vm);
 		}
 

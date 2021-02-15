@@ -1,0 +1,123 @@
+﻿@model IdentityConfigurationViewModel
+@{
+	ViewData["Title"] = "Admin";
+}
+
+<div class="row">
+	<div class="col-md-12">
+		<table class="table table-bordered">
+			<tr>
+				<th>Client Id</th>
+				<th>Client Name</th>
+				<th>Site</th>
+				<th>Require Consent</th>
+				<th>Allowed Scopes</th>
+			</tr>
+			@foreach (var client in Model.Clients)
+			{
+				<tr>
+					<td>@client.ClientId</td>
+					<td>@client.ClientName</td>
+					<td>@(client.RedirectUris.Select(x => new Uri(x.RedirectUri).Authority).First())</td>
+					<td>@client.RequireConsent</td>
+					<td>
+						<ul>
+							@foreach (var scope in client.AllowedScopes)
+							{
+								<li>@scope.Scope</li>
+							}
+						</ul>
+					</td>
+				</tr>
+			}
+		</table>
+	</div>
+	<div class="col-md-12">
+		<form asp-controller="Admin" asp-action="AddClient" method="post" class="form-horizontal">
+			<h4>Create New Client</h4>
+			<hr />
+			<div asp-validation-summary="All" class="text-danger"></div>
+			<div class="form-group">
+				<label asp-for="AddClientViewModel.ClientName" class="col-xs-12"></label>
+				<div class="col-xs-12">
+					<input asp-for="AddClientViewModel.ClientName" class="form-control" />
+					<span asp-validation-for="AddClientViewModel.ClientName" class="text-danger"></span>
+				</div>
+			</div>
+			<div class="form-group">
+				<label asp-for="AddClientViewModel.GrantType" class="col-xs-12"></label>
+				<div class="col-xs-12">
+					<select asp-for="AddClientViewModel.GrantType" asp-items="Html.GetEnumSelectList<GrantType>()" class="form-control">
+						<option value="">Choose Grant Type</option>
+					</select>
+				</div>
+			</div>
+			<div class="form-group">
+				<label asp-for="AddClientViewModel.BaseUrl" class="col-xs-12"></label>
+				<div class="col-xs-12">
+					<input asp-for="AddClientViewModel.BaseUrl" class="form-control" />
+					<span asp-validation-for="AddClientViewModel.BaseUrl" class="text-danger"></span>
+				</div>
+			</div>
+			<div class="form-group">
+				<label asp-for="AddClientViewModel.RedirectPath" class="col-xs-12"></label>
+				<div class="col-xs-12">
+					<input asp-for="AddClientViewModel.RedirectPath" class="form-control" />
+					<span asp-validation-for="AddClientViewModel.RedirectPath" class="text-danger"></span>
+				</div>
+			</div>
+			<div class="form-group">
+				<label asp-for="AddClientViewModel.LogoutPath" class="col-xs-12"></label>
+				<div class="col-xs-12">
+					<input asp-for="AddClientViewModel.LogoutPath" class="form-control" />
+					<span asp-validation-for="AddClientViewModel.LogoutPath" class="text-danger"></span>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="checkbox col-xs-12">
+					<label asp-for="AddClientViewModel.AllowAccessTokenViaBrowser">
+						<input asp-for="AddClientViewModel.AllowAccessTokenViaBrowser" />
+						@Html.DisplayNameFor(m => m.AddClientViewModel.AllowAccessTokenViaBrowser)
+					</label>
+				</div>
+				<div class="checkbox col-xs-12">
+					<label asp-for="AddClientViewModel.IncludeProfile">
+						<input asp-for="AddClientViewModel.IncludeProfile" />
+						@Html.DisplayNameFor(m => m.AddClientViewModel.IncludeProfile)
+					</label>
+				</div>
+				<div class="checkbox col-xs-12">
+					<label asp-for="AddClientViewModel.RequireConsent">
+						<input asp-for="AddClientViewModel.RequireConsent" />
+						@Html.DisplayNameFor(m => m.AddClientViewModel.RequireConsent)
+					</label>
+				</div>
+				<div class="checkbox col-xs-12">
+					<label asp-for="AddClientViewModel.RequireSecret">
+						<input asp-for="AddClientViewModel.RequireSecret" />
+						@Html.DisplayNameFor(m => m.AddClientViewModel.RequireSecret)
+					</label>
+				</div>
+			</div>
+			<div class="form-group">
+				<label asp-for="AddClientViewModel.AllowedApiResourcesCommaSeperated" class="col-xs-12"></label>
+				<div class="col-xs-12">
+					<input asp-for="AddClientViewModel.AllowedApiResourcesCommaSeperated" class="form-control" />
+					<span asp-validation-for="AddClientViewModel.AllowedApiResourcesCommaSeperated" class="text-danger"></span>
+				</div>
+			</div>
+			<div class="form-group">
+				<label asp-for="AddClientViewModel.AllowAdminScope" class="col-xs-12"></label>
+				<div class="col-xs-12">
+					<input asp-for="AddClientViewModel.AllowAdminScope" class="form-control" />
+					<span asp-validation-for="AddClientViewModel.AllowAdminScope" class="text-danger"></span>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class=" col-md-10">
+					<button type="submit" class="btn btn-default">Create</button>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>

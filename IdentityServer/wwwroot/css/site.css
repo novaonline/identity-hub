@@ -1,50 +1,50 @@
 ﻿body {
-    padding-top: 50px;
-    padding-bottom: 200px;
+	padding-top: 50px;
+	padding-bottom: 200px;
 }
 
 /* Wrapping element */
 /* Set some basic padding to keep content from hitting the edges */
 .body-content {
-    padding-left: 15px;
-    padding-right: 15px;
-    height: 50%;
-    min-height:250px;
+	padding-left: 15px;
+	padding-right: 15px;
+	height: 50%;
+	min-height: 250px;
 }
 
 /* Set widths on the form inputs since otherwise they're 100% wide */
 input,
 select,
 textarea {
-    max-width: 280px;
+	max-width: 280px;
 }
 
 
 /* Carousel */
 .carousel-caption p {
-    font-size: 20px;
-    line-height: 1.4;
+	font-size: 20px;
+	line-height: 1.4;
 }
 
 /* buttons and links extension to use brackets: [ click me ] */
 .btn-bracketed::before {
-    display: inline-block;
-    content: "[";
-    padding-right: 0.5em;
+	display: inline-block;
+	content: "[";
+	padding-right: 0.5em;
 }
 
 .btn-bracketed::after {
-    display: inline-block;
-    content: "]";
-    padding-left: 0.5em;
+	display: inline-block;
+	content: "]";
+	padding-left: 0.5em;
 }
 
 /* Hide/rearrange for smaller screens */
 @media screen and (max-width: 767px) {
-    /* Hide captions */
-    .carousel-caption {
-        display: none;
-    }
+	/* Hide captions */
+	.carousel-caption {
+		display: none;
+	}
 }
 
 footer {
@@ -55,12 +55,14 @@ footer {
 	left: 0;
 	right: 0;
 }
-    footer .social-icons{
-        padding: 20px 0;
-    }
-    footer .site-map{
-        padding: 10px 0;
-    }
+
+	footer .social-icons {
+		padding: 20px 0;
+	}
+
+	footer .site-map {
+		padding: 10px 0;
+	}
 
 	footer .final-words {
 		border-top: #ccc;
@@ -71,9 +73,19 @@ footer {
 		font-size: 0;
 	}
 
-	footer:hover .final-words, footer:focus .final-words{
-		font-size:15px;
+	footer:hover .final-words, footer:focus .final-words {
+		font-size: 15px;
 		height: 50px;
 		padding: 10px 0;
 		transition: all ease-in-out 0.2s;
 	}
+
+body {
+	padding-top: 70px;
+}
+
+@media screen and (min-width: 768px) {
+	body {
+		padding-top: 100px;
+	}
+}
