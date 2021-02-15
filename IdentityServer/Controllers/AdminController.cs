@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static IdentityModel.OidcConstants;
@@ -79,23 +80,23 @@ namespace IdentityServer.Controllers
 				{
 					var name = apiResource.Trim().Split(" ").First();
 					var description = name;
-					if (!(await identityConfigurationContext.ApiResources.AnyAsync(x => x.Name == name)))
-					{
-						var secretPlainText = Guid.NewGuid().ToString();
-						var secret = secretPlainText.Sha256();
-						var scopes = new List<ApiScope>
+					var scopes = new List<ApiScope>
 							{
 								new ApiScope(name:$"{name}.read", displayName: $"{name} read access"),
 								new ApiScope(name:$"{name}.write", displayName: $"{name} write access"),
 								new ApiScope(name:$"{name}.delete", displayName: $"{name} delete access"),
 							};
+					if (!(await identityConfigurationContext.ApiResources.AnyAsync(x => x.Name == name)))
+					{
+						var secretPlainText = Guid.NewGuid().ToString();
+						var secret = secretPlainText.Sha256();
+				
 						if(model.AllowAdminScope)
 						{
 							var adminScope = new ApiScope(name: $"{name}.manage", displayName: $"Admin Access to {name}");
 							scopes.Add(adminScope);
 						}
 						identityConfigurationContext.ApiScopes.AddRange(scopes.Select(s => s.ToEntity()));
-						scopedItems.AddRange(scopes.Select(x => x.Name));
 						var apiResourceModel = new ApiResource(name, description)
 						{
 							Scopes = scopes.Select(x => x.Name).ToList()
@@ -109,6 +110,7 @@ namespace IdentityServer.Controllers
 						identityConfigurationContext.ApiResources.Add(apiResourceModel.ToEntity());
 						responsesAfterCreate.Add(responseAfterCreateModel);
 					}
+					scopedItems.AddRange(scopes.Select(x => x.Name));
 				}
 				await identityConfigurationContext.SaveChangesAsync();
 
@@ -127,6 +129,7 @@ namespace IdentityServer.Controllers
 					PostLogoutRedirectUris = new List<string> { new UriBuilder(model.BaseUrl) { Path = model.LogoutPath }.ToString() },
 					AllowedCorsOrigins = new List<string> { model.BaseUrl.GetLeftPart(UriPartial.Authority) },
 					AllowedScopes = scopedItems,
+					AllowedIdentityTokenSigningAlgorithms = null
 				};
 				if(clientModel.RequireClientSecret)
 				{
@@ -144,7 +147,7 @@ namespace IdentityServer.Controllers
 		}
 
 		[HttpPost]
-		public IActionResult RemoveClient()
+		public async Task<IActionResult> RemoveClient(string clientName)
 		{
 			return View();
 		}
