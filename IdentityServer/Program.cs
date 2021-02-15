@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore;
 using System.Net;
+using Microsoft.Extensions.Configuration;
 
 namespace IdentityServer
 {
@@ -10,10 +11,6 @@ namespace IdentityServer
 
 		public static IWebHost BuildWebHost(string[] args)
 		{
-			var hostConfig = new ConfigurationBuilder()
-							   .AddEnvironmentVariables()
-							   .Build();
-
 			return WebHost.CreateDefaultBuilder(args)
 			.CaptureStartupErrors(true)
 			.UseSetting(WebHostDefaults.DetailedErrorsKey, "true")
