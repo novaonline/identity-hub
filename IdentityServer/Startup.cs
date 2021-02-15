@@ -132,8 +132,7 @@ namespace IdentityServer
 			}
 			else
 			{
-				app.UseDeveloperExceptionPage();
-				//app.UseExceptionHandler("/Home/Error");
+				app.UseExceptionHandler("/Home/Error");
 			}
 
 			app.UseRouting();
