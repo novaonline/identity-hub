@@ -37,7 +37,10 @@ namespace IdentityServer.Models.IdentityConfigurationViewModels
 		
 		[Display(Name = "Include Profile Scope")]
 		public bool IncludeProfile { get; set; }
-		
+
+		[Display(Name = "Allow Admin Scope")]
+		public bool AllowAdminScope { get; set; }
+
 		[Display(Name = "Base Url")]
 		public Uri BaseUrl { get; set; }
 		

@@ -11,5 +11,6 @@ namespace IdentityServer.Models.IdentityConfigurationViewModels
 		[Display(Name = "Api Scope Name")]
 		public string ApiScopeName { get; set; }
 		public string Secret { get; set; }
+		public string SecretPlainText { get; set; }
 	}
 }

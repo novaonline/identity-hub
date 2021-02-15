@@ -47,7 +47,7 @@
 			<div class="form-group">
 				<label asp-for="AddClientViewModel.GrantType" class="col-xs-12"></label>
 				<div class="col-xs-12">
-					<select  asp-for="AddClientViewModel.GrantType" asp-items="Html.GetEnumSelectList<GrantType>()" class="form-control" >
+					<select asp-for="AddClientViewModel.GrantType" asp-items="Html.GetEnumSelectList<GrantType>()" class="form-control">
 						<option value="">Choose Grant Type</option>
 					</select>
 				</div>
@@ -104,6 +104,13 @@
 				<div class="col-xs-12">
 					<input asp-for="AddClientViewModel.AllowedApiResourcesCommaSeperated" class="form-control" />
 					<span asp-validation-for="AddClientViewModel.AllowedApiResourcesCommaSeperated" class="text-danger"></span>
+				</div>
+			</div>
+			<div class="form-group">
+				<label asp-for="AddClientViewModel.AllowAdminScope" class="col-xs-12"></label>
+				<div class="col-xs-12">
+					<input asp-for="AddClientViewModel.AllowAdminScope" class="form-control" />
+					<span asp-validation-for="AddClientViewModel.AllowAdminScope" class="text-danger"></span>
 				</div>
 			</div>
 			<div class="form-group">

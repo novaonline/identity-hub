@@ -12,8 +12,9 @@ namespace IdentityServerClient.CLI
 		/// <param name="args"></param>
 		static int Main(string[] args)
 		{
-			return Parser.Default.ParseArguments<AddAdminOptions>(args).MapResult(
+			return Parser.Default.ParseArguments<AddAdminOptions, GenerateTokenOptions>(args).MapResult(
 				(AddAdminOptions opts) => AdminService.AddAsync(opts).Result,
+				(GenerateTokenOptions opts) => GenerateTokenService.GenerateAsync(opts).Result,
 				errs => 1);
 		}
 	}

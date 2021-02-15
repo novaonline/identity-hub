@@ -78,26 +78,36 @@ namespace IdentityServer.Controllers
 				foreach (var apiResource in apiResourcesSplit)
 				{
 					var name = apiResource.Trim().Split(" ").First();
-					scopedItems.Add(name);
 					var description = name;
 					if (!(await identityConfigurationContext.ApiResources.AnyAsync(x => x.Name == name)))
 					{
-						var secret = Guid.NewGuid().ToString().Sha256();
+						var secretPlainText = Guid.NewGuid().ToString();
+						var secret = secretPlainText.Sha256();
 						var scopes = new List<ApiScope>
 							{
 								new ApiScope(name:$"{name}.read", displayName: $"{name} read access"),
 								new ApiScope(name:$"{name}.write", displayName: $"{name} write access"),
 								new ApiScope(name:$"{name}.delete", displayName: $"{name} delete access"),
-								new ApiScope(name:$"{name}.manage", displayName: $"Admin Access to {name}")
 							};
+						if(model.AllowAdminScope)
+						{
+							var adminScope = new ApiScope(name: $"{name}.manage", displayName: $"Admin Access to {name}");
+							scopes.Add(adminScope);
+						}
 						identityConfigurationContext.ApiScopes.AddRange(scopes.Select(s => s.ToEntity()));
+						scopedItems.AddRange(scopes.Select(x => x.Name));
 						var apiResourceModel = new ApiResource(name, description)
 						{
-							ApiSecrets = { new Secret(secret) },
 							Scopes = scopes.Select(x => x.Name).ToList()
 						};
+						var responseAfterCreateModel = new ResponseAfterCreate() { ApiScopeName = name };
+						if (model.RequireSecret)
+						{
+							responseAfterCreateModel.Secret = secret;
+							responseAfterCreateModel.SecretPlainText = secretPlainText;
+						}
 						identityConfigurationContext.ApiResources.Add(apiResourceModel.ToEntity());
-						responsesAfterCreate.Add(new ResponseAfterCreate { ApiScopeName = name, Secret = secret });
+						responsesAfterCreate.Add(responseAfterCreateModel);
 					}
 				}
 				await identityConfigurationContext.SaveChangesAsync();
@@ -113,11 +123,15 @@ namespace IdentityServer.Controllers
 					RequireClientSecret = model.RequireSecret,
 					AllowAccessTokensViaBrowser = model.AllowAccessTokenViaBrowser,
 					RequireConsent = model.RequireConsent,
-					RedirectUris = new List<string> { new UriBuilder(model.BaseUrl.Authority) { Path = model.RedirectPath }.ToString() },
-					PostLogoutRedirectUris = new List<string> { new UriBuilder(model.BaseUrl.Authority) { Path = model.LogoutPath }.ToString() },
-					AllowedCorsOrigins = new List<string> { model.BaseUrl.Authority },
-					AllowedScopes = scopedItems
+					RedirectUris = new List<string> { new UriBuilder(model.BaseUrl) { Path = model.RedirectPath }.ToString() },
+					PostLogoutRedirectUris = new List<string> { new UriBuilder(model.BaseUrl) { Path = model.LogoutPath }.ToString() },
+					AllowedCorsOrigins = new List<string> { model.BaseUrl.GetLeftPart(UriPartial.Authority) },
+					AllowedScopes = scopedItems,
 				};
+				if(clientModel.RequireClientSecret)
+				{
+					clientModel.ClientSecrets = responsesAfterCreate.Select(x => new Secret(x.Secret)).ToArray();
+				}
 				identityConfigurationContext.Clients.Add(clientModel.ToEntity());
 				await identityConfigurationContext.SaveChangesAsync();
 				var vm = new IdentityConfigurationViewModel

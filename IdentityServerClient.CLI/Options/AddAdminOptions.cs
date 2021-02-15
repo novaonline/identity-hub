@@ -7,5 +7,8 @@ namespace IdentityServerClient.CLI.Options
 	{
 		[Option('e', "email", Required = true, HelpText = "The email address for admin user")]
 		public string Email { get; set; }
+
+		[Option('d', "db", Required = true, HelpText = "The Database Connection String")]
+		public string DatabaseConnection { get; set; }
 	}
 }
