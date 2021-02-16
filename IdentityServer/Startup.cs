@@ -134,6 +134,11 @@ namespace IdentityServer
                 }
                 if (cert == null)
                 {
+                    cert = new X509Certificate2(System.IO.Path.Combine(Env.ContentRootPath, Configuration["Security:file"]), Configuration["Security:exportpassword"]);
+                    Logger.LogInformation($"Falling back to cert from file. Successfully loaded: {cert.Thumbprint}");
+                }
+                if (cert == null)
+                {
                     Logger.LogInformation($"Using dev signed cert");
                     identityBuilder.AddDeveloperSigningCredential();
 
