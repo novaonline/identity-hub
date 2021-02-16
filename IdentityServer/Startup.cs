@@ -23,128 +23,155 @@ using System;
 using Microsoft.Extensions.Hosting;
 using IdentityServer.Helpers.Migration;
 using IdentityServer.Helpers.Filters;
+using System.Security.Cryptography.X509Certificates;
 
 namespace IdentityServer
 {
-	public class Startup
-	{
-		public IConfiguration Configuration { get; }
-		public ILogger Logger { get; }
-		public IWebHostEnvironment Env { get;  }
+    public class Startup
+    {
+        public IConfiguration Configuration { get; }
+        public ILogger Logger { get; }
+        public IWebHostEnvironment Env { get; }
 
-		public Startup(IConfiguration configuration, ILoggerFactory logger, IWebHostEnvironment env)
-		{
-			Configuration = configuration;
-			Logger = logger.CreateLogger("start up");
-			Env = env;
-		}
+        public Startup(IConfiguration configuration, ILoggerFactory logger, IWebHostEnvironment env)
+        {
+            Configuration = configuration;
+            Logger = logger.CreateLogger("start up");
+            Env = env;
+        }
 
-		// This method gets called by the runtime. Use this method to add services to the container.
-		public void ConfigureServices(IServiceCollection services)
-		{
-			services.AddControllersWithViews();
-			services.AddRazorPages().AddRazorRuntimeCompilation();
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddControllersWithViews();
+            services.AddRazorPages().AddRazorRuntimeCompilation();
 
-			services.AddDbContext<ApplicationDbContext>(builder => builder.UseDefault(Configuration));
+            services.AddDbContext<ApplicationDbContext>(builder => builder.UseDefault(Configuration));
 
-			services.AddIdentity<ApplicationUser, IdentityRole>()
-				.AddEntityFrameworkStores<ApplicationDbContext>()
-				.AddDefaultTokenProviders();
-			if (Env.IsDevelopment())
-			{
-				services.Configure<IdentityOptions>(options =>
-				{
-					options.Password.RequireDigit = true;
-					options.Password.RequireLowercase = true;
-					options.Password.RequireUppercase = true;
-					options.Password.RequiredUniqueChars = 0;
-				});
-			}
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
+            if (Env.IsDevelopment())
+            {
+                services.Configure<IdentityOptions>(options =>
+                {
+                    options.Password.RequireDigit = true;
+                    options.Password.RequireLowercase = true;
+                    options.Password.RequireUppercase = true;
+                    options.Password.RequiredUniqueChars = 0;
+                });
+            }
 
-			services.ConfigureApplicationCookie(options =>
-			{
-				options.ExpireTimeSpan = TimeSpan.FromDays(7);
-				options.LoginPath = "/login";
-				options.LogoutPath = "/logout";
-				options.SlidingExpiration = true;
-			});
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.ExpireTimeSpan = TimeSpan.FromDays(7);
+                options.LoginPath = "/login";
+                options.LogoutPath = "/logout";
+                options.SlidingExpiration = true;
+            });
 
-			// Add application services.
-			services.AddTransient<IEmailSender, AuthMessageSender>();
-			services.AddTransient<ISmsSender, AuthMessageSender>();
+            // Add application services.
+            services.AddTransient<IEmailSender, AuthMessageSender>();
+            services.AddTransient<ISmsSender, AuthMessageSender>();
 
 
-			var mvcBuilder = services.AddMvc(config =>
-			{
-				// globally authorize each controller just in case an authorize decor was missed
-				var policy = new AuthorizationPolicyBuilder()
-				 .RequireAuthenticatedUser()
-				 .Build();
-				config.Filters.Add(new AuthorizeFilter(policy));
-			});
+            var mvcBuilder = services.AddMvc(config =>
+            {
+                // globally authorize each controller just in case an authorize decor was missed
+                var policy = new AuthorizationPolicyBuilder()
+                 .RequireAuthenticatedUser()
+                 .Build();
+                config.Filters.Add(new AuthorizeFilter(policy));
+            });
 
-			mvcBuilder.AddMvcOptions(o => { o.Filters.Add(new GlobalExceptionFilter(Logger)); });
+            mvcBuilder.AddMvcOptions(o => { o.Filters.Add(new GlobalExceptionFilter(Logger)); });
 
-			// Adds IdentityServer
-			var identityBuilder = services.AddIdentityServer(o =>
-				{
-					o.Events.RaiseErrorEvents = true;
-					o.Events.RaiseInformationEvents = true;
-					o.Events.RaiseFailureEvents = true;
-					o.Events.RaiseSuccessEvents = true;
-					o.UserInteraction.LoginUrl = "/login";
-					o.UserInteraction.LogoutUrl = "/logout";
-				})
-				.AddConfigurationStore(options =>
-				{
-					options.ConfigureDbContext = buider => buider.UseDefault(Configuration);
-					options.DefaultSchema = "IdentityConfigure";
-				})
-				.AddOperationalStore(options =>
-				{
-					options.ConfigureDbContext = builder => builder.UseDefault(Configuration);
-					options.DefaultSchema = "IdentityOperation";
-					// this enables automatic token cleanup. this is optional.
-					options.EnableTokenCleanup = true;
-					options.TokenCleanupInterval = 30;
-				}).AddAspNetIdentity<ApplicationUser>();
+            // Adds IdentityServer
+            var identityBuilder = services.AddIdentityServer(o =>
+                {
+                    o.Events.RaiseErrorEvents = true;
+                    o.Events.RaiseInformationEvents = true;
+                    o.Events.RaiseFailureEvents = true;
+                    o.Events.RaiseSuccessEvents = true;
+                    o.UserInteraction.LoginUrl = "/login";
+                    o.UserInteraction.LogoutUrl = "/logout";
+                })
+                .AddConfigurationStore(options =>
+                {
+                    options.ConfigureDbContext = buider => buider.UseDefault(Configuration);
+                    options.DefaultSchema = "IdentityConfigure";
+                })
+                .AddOperationalStore(options =>
+                {
+                    options.ConfigureDbContext = builder => builder.UseDefault(Configuration);
+                    options.DefaultSchema = "IdentityOperation";
+                    // this enables automatic token cleanup. this is optional.
+                    options.EnableTokenCleanup = true;
+                    options.TokenCleanupInterval = 30;
+                }).AddAspNetIdentity<ApplicationUser>();
 
-			if (Env.IsDevelopment())
-			{
-				identityBuilder.AddDeveloperSigningCredential();
-			} else
-			{
-				// TODO
-			}
-		}
+            if (Env.IsDevelopment())
+            {
+                identityBuilder.AddDeveloperSigningCredential();
+            }
+            else
+            {
+                X509Certificate2 cert = null;
+                using (X509Store certStore = new X509Store(StoreName.My, StoreLocation.CurrentUser))
+                {
+                    certStore.Open(OpenFlags.ReadOnly);
+                    X509Certificate2Collection certCollection = certStore.Certificates.Find(
+                        X509FindType.FindByThumbprint,
+                        // Replace below with your cert's thumbprint
+                        Configuration["Security:Thumbprint"],
+                        false);
+                    // Get the first cert with the thumbprint
+                    if (certCollection.Count > 0)
+                    {
+                        cert = certCollection[0];
+                        Logger.LogInformation($"Successfully loaded cert from registry: {cert.Thumbprint}");
+                    }
+                }
+                if (cert == null)
+                {
+                    Logger.LogInformation($"Using dev signed cert");
+                    identityBuilder.AddDeveloperSigningCredential();
 
-		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-		public void Configure(IApplicationBuilder app)
-		{
-			app.UseStaticFiles();
+                }
+                else
+                {
+                    identityBuilder.AddSigningCredential(cert);
+                }
+            }
+        }
 
-			app.InitializeDatabase(Env);
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app)
+        {
+            app.UseStaticFiles();
 
-			if (Env.IsDevelopment())
-			{
-				app.UseDeveloperExceptionPage();
-				app.UseBrowserLink();
-			}
-			else
-			{
-				app.UseExceptionHandler("/Home/Error");
-			}
+            app.InitializeDatabase(Env);
 
-			app.UseRouting();
-			app.UseHttpsRedirection();
-			app.UseIdentityServer();
-			app.UseAuthentication();
-			app.UseAuthorization();
-			app.UseEndpoints(endpoints =>
-			{
-				endpoints.MapDefaultControllerRoute();
-			});
-			app.UseHttpsRedirection();
-		}
-	}
+            if (Env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseBrowserLink();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
+            }
+
+            app.UseRouting();
+            app.UseHttpsRedirection();
+            app.UseIdentityServer();
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapDefaultControllerRoute();
+            });
+            app.UseHttpsRedirection();
+        }
+    }
 }
