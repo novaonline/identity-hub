@@ -140,7 +140,7 @@ namespace IdentityServer
                 //if (cert == null)
                 //{
                 //    Logger.LogInformation($"Using dev signed cert");
-                //    identityBuilder.AddDeveloperSigningCredential();
+                   identityBuilder.AddDeveloperSigningCredential();
 
                 //}
                 //else
