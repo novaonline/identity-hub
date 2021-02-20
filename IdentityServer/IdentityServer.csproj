@@ -21,6 +21,7 @@
 			<!-- Remove IncludeAssets to allow compiling against the assembly -->
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="5.0.3" />
 		<PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.2.0" />
 	</ItemGroup>
 

@@ -144,11 +144,5 @@ namespace IdentityServer.Controllers
 			}
 			return View(new IdentityConfigurationViewModel());
 		}
-
-		[HttpPost]
-		public async Task<IActionResult> RemoveClient(string clientName)
-		{
-			return View();
-		}
 	}
 }
