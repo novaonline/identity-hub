@@ -116,38 +116,38 @@ namespace IdentityServer
             }
             else
             {
-                //X509Certificate2 cert = null;
-                //using (X509Store certStore = new X509Store(StoreName.My, StoreLocation.CurrentUser))
-                //{
-                //    certStore.Open(OpenFlags.ReadOnly);
-                //    X509Certificate2Collection certCollection = certStore.Certificates.Find(
-                //        X509FindType.FindByThumbprint,
-                //        // Replace below with your cert's thumbprint
-                //        Configuration["Security:Thumbprint"],
-                //        false);
-                //    // Get the first cert with the thumbprint
-                //    if (certCollection.Count > 0)
-                //    {
-                //        cert = certCollection[0];
-                //        Logger.LogInformation($"Successfully loaded cert from registry: {cert.Thumbprint}");
-                //    }
-                //}
-                //if (cert == null)
-                //{
-                //    cert = new X509Certificate2(System.IO.Path.Combine(Env.ContentRootPath, Configuration["Security:file"]), Configuration["Security:exportpassword"]);
-                //    Logger.LogInformation($"Falling back to cert from file. Successfully loaded: {cert.Thumbprint}");
-                //}
-                //if (cert == null)
-                //{
-                //    Logger.LogInformation($"Using dev signed cert");
-                   identityBuilder.AddDeveloperSigningCredential();
+				X509Certificate2 cert = null;
+				//using (X509Store certStore = new X509Store(StoreName.My, StoreLocation.CurrentUser))
+				//{
+				//    certStore.Open(OpenFlags.ReadOnly);
+				//    X509Certificate2Collection certCollection = certStore.Certificates.Find(
+				//        X509FindType.FindByThumbprint,
+				//        // Replace below with your cert's thumbprint
+				//        Configuration["Security:Thumbprint"],
+				//        false);
+				//    // Get the first cert with the thumbprint
+				//    if (certCollection.Count > 0)
+				//    {
+				//        cert = certCollection[0];
+				//        Logger.LogInformation($"Successfully loaded cert from registry: {cert.Thumbprint}");
+				//    }
+				//}
+				//if (cert == null)
+				//{
+				//    cert = new X509Certificate2(System.IO.Path.Combine(Env.ContentRootPath, Configuration["Security:file"]), Configuration["Security:exportpassword"]);
+				//    Logger.LogInformation($"Falling back to cert from file. Successfully loaded: {cert.Thumbprint}");
+				//}
+				if (cert == null)
+				{
+					Logger.LogInformation($"Using dev signed cert");
+					identityBuilder.AddDeveloperSigningCredential();
 
-                //}
-                //else
-                //{
-                //    identityBuilder.AddSigningCredential(cert);
-                //}
-            }
+				}
+				//else
+				//{
+				//    identityBuilder.AddSigningCredential(cert);
+				//}
+			}
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
