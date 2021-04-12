@@ -73,7 +73,7 @@ namespace IdentityServer.Controllers
 				{
 					scopedItems.Add(IdentityServerConstants.StandardScopes.Profile);
 				}
-				var apiResourcesSplit = model.AllowedApiResourcesCommaSeperated.Split(",");
+				var apiResourcesSplit = model.AllowedApiResourcesCommaSeperated?.Split(",") ?? new string[] { };
 				var responsesAfterCreate = new List<ResponseAfterCreate>();
 				foreach (var apiResource in apiResourcesSplit)
 				{
